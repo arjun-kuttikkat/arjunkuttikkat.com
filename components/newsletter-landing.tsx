@@ -92,12 +92,24 @@ const previewCards = [
 /** Same ambient treatment as the home `Hero` section: soft blurs, grid, line. Site body `#050507` + global radials show through. */
 function NewsletterAmbient() {
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      <div className="absolute left-[2%] top-[8%] h-[28rem] w-[36rem] max-w-[95vw] rounded-full bg-[radial-gradient(ellipse_72%_58%_at_50%_45%,rgba(34,211,238,0.08),rgba(244,114,182,0.06)_42%,transparent_68%)] blur-[100px]" />
-      <div className="absolute left-[-12%] top-4 h-[38rem] w-[38rem] rounded-full bg-cyan-400/10 blur-[130px]" />
-      <div className="absolute right-[-10%] top-12 h-[32rem] w-[32rem] rounded-full bg-pink-500/10 blur-[120px]" />
-      <div className="absolute left-[8%] top-20 h-[26rem] w-[26rem] rounded-full bg-white/5 blur-[100px]" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.028)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.022)_1px,transparent_1px)] bg-[size:62px_62px] [mask-image:radial-gradient(ellipse_80%_65%_at_45%_32%,black,transparent)]" />
+    <div
+      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+      aria-hidden
+    >
+      <div
+        className="absolute inset-0 opacity-95"
+        style={{
+          backgroundImage: [
+            "radial-gradient(ellipse 70% 55% at 18% 18%, rgba(34,211,238,0.10), transparent 62%)",
+            "radial-gradient(ellipse 62% 52% at 86% 22%, rgba(244,114,182,0.10), transparent 60%)",
+            "radial-gradient(ellipse 60% 50% at 28% 28%, rgba(255,255,255,0.06), transparent 64%)",
+            "linear-gradient(to right, rgba(255,255,255,0.028) 1px, transparent 1px)",
+            "linear-gradient(to bottom, rgba(255,255,255,0.022) 1px, transparent 1px)"
+          ].join(","),
+          backgroundSize: ["auto", "auto", "auto", "62px 62px", "62px 62px"].join(","),
+          maskImage: "radial-gradient(ellipse 80% 65% at 45% 32%, black, transparent)"
+        }}
+      />
       <div className="absolute left-[4%] top-[-12%] h-[130%] w-px rotate-[18deg] bg-gradient-to-b from-transparent via-white/20 to-transparent" />
     </div>
   );
@@ -124,7 +136,7 @@ function EditorialTile({
           ? undefined
           : { y: -6, transition: { duration: 0.4, ease: sectionEase } }
       }
-      className={`group relative overflow-hidden rounded-[1.35rem] border border-white/[0.09] bg-[linear-gradient(152deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.02)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_24px_70px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-[border-color,box-shadow] duration-500 group-hover:border-cyan-300/35 group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(34,211,238,0.12),0_32px_90px_rgba(0,0,0,0.45),0_0_60px_rgba(34,211,238,0.1),0_0_80px_rgba(244,114,182,0.06)] ${
+      className={`group relative overflow-hidden rounded-[1.35rem] border border-white/[0.09] bg-[linear-gradient(152deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.02)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_16px_44px_rgba(0,0,0,0.36)] sm:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_24px_70px_rgba(0,0,0,0.4)] backdrop-blur-none sm:backdrop-blur-xl transition-[border-color,box-shadow] duration-500 group-hover:border-cyan-300/35 group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(34,211,238,0.12),0_28px_70px_rgba(0,0,0,0.42)] sm:group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(34,211,238,0.12),0_32px_90px_rgba(0,0,0,0.45),0_0_60px_rgba(34,211,238,0.1),0_0_80px_rgba(244,114,182,0.06)] ${
         featured ? "md:col-span-2 md:min-h-[17rem] lg:min-h-[18rem]" : "min-h-[15.5rem] sm:min-h-[16rem]"
       }`}
     >
@@ -209,7 +221,7 @@ export function NewsletterLanding() {
               className="pointer-events-none absolute -inset-3 rounded-[2rem] bg-[radial-gradient(ellipse_70%_65%_at_50%_35%,rgba(255,255,255,0.08),transparent_68%)] blur-2xl sm:-inset-5 sm:rounded-[2.25rem]"
               aria-hidden
             />
-            <div className="relative rounded-[1.55rem] border border-white/[0.09] bg-white/[0.03] p-5 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:rounded-[1.75rem] sm:p-7 lg:p-9">
+            <div className="relative rounded-[1.55rem] border border-white/[0.09] bg-white/[0.03] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.42)] sm:shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-none sm:backdrop-blur-xl sm:rounded-[1.75rem] sm:p-7 lg:p-9">
               <NewsletterSignup variant="premium" signupLocation="newsletter_page" />
               <p className="mx-auto mt-7 max-w-lg text-center text-[0.8125rem] leading-relaxed text-zinc-500 sm:text-sm">
                 From <span className="text-zinc-400">newsletters@arjunkuttikkat.com</span>
@@ -243,7 +255,7 @@ export function NewsletterLanding() {
           </SectionReveal>
 
           <SectionReveal delay={0.06}>
-            <div className="relative rounded-[1.35rem] border border-white/[0.09] bg-[linear-gradient(145deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.02)_100%)] p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_28px_80px_rgba(0,0,0,0.4)] backdrop-blur-md sm:p-10 lg:p-12">
+            <div className="relative rounded-[1.35rem] border border-white/[0.09] bg-[linear-gradient(145deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.02)_100%)] p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_18px_54px_rgba(0,0,0,0.36)] sm:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_28px_80px_rgba(0,0,0,0.4)] backdrop-blur-none sm:backdrop-blur-md sm:p-10 lg:p-12">
               <div
                 className="pointer-events-none absolute -right-20 top-1/2 h-[120%] w-48 -translate-y-1/2 bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.04),transparent)] blur-2xl"
                 aria-hidden
@@ -274,7 +286,7 @@ export function NewsletterLanding() {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" aria-hidden />
         <div className="relative mx-auto w-full max-w-[76rem] px-4 sm:px-6 lg:px-10">
           <SectionReveal className="max-w-3xl">
-            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-cyan-300/90">What you'll get</p>
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-cyan-300/90">What you&apos;ll get</p>
             <h2 className="mt-4 text-[clamp(2.1rem,4vw,3.25rem)] font-semibold tracking-tight text-white">
               What shows up here
             </h2>
@@ -312,7 +324,7 @@ export function NewsletterLanding() {
                 className="pointer-events-none absolute -inset-8 rounded-[2rem] bg-[radial-gradient(ellipse_at_50%_40%,rgba(255,255,255,0.06),transparent_68%)] blur-3xl"
                 aria-hidden
               />
-              <div className="relative overflow-hidden rounded-[1.5rem] border border-white/[0.09] bg-[linear-gradient(165deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.02)_100%)] px-8 py-14 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_32px_100px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:rounded-[1.65rem] sm:px-12 sm:py-16">
+              <div className="relative overflow-hidden rounded-[1.5rem] border border-white/[0.09] bg-[linear-gradient(165deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.02)_100%)] px-8 py-14 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_70px_rgba(0,0,0,0.38)] sm:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_32px_100px_rgba(0,0,0,0.4)] backdrop-blur-none sm:backdrop-blur-xl sm:rounded-[1.65rem] sm:px-12 sm:py-16">
                 <div
                   className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-[radial-gradient(ellipse_80%_100%_at_50%_0%,rgba(255,255,255,0.06),transparent_55%)]"
                   aria-hidden
@@ -339,7 +351,7 @@ export function NewsletterLanding() {
                 className="pointer-events-none absolute left-1/2 top-0 h-[min(70%,24rem)] w-[min(120%,48rem)] -translate-x-1/2 bg-[radial-gradient(ellipse_at_50%_0%,rgba(34,211,238,0.07),rgba(244,114,182,0.06)_45%,transparent_68%)] blur-3xl"
                 aria-hidden
               />
-              <div className="relative border-t border-white/[0.06] bg-white/[0.02] px-6 py-14 backdrop-blur-2xl sm:px-12 sm:py-16 lg:px-16 lg:py-20">
+              <div className="relative border-t border-white/[0.06] bg-white/[0.02] px-6 py-14 backdrop-blur-none sm:backdrop-blur-2xl sm:px-12 sm:py-16 lg:px-16 lg:py-20">
                 <div className="mx-auto max-w-3xl text-center">
                   <p className="text-[0.65rem] font-semibold uppercase tracking-[0.26em] text-pink-300/90">Last step</p>
                   <h2 className="mt-5 text-[clamp(2rem,5vw,3.25rem)] font-semibold leading-[1.1] tracking-tight text-white">
@@ -353,7 +365,7 @@ export function NewsletterLanding() {
                   </p>
                 </div>
                 <div className="relative mx-auto mt-12 w-full max-w-[min(52rem,100%)] lg:mt-14 lg:max-w-[56rem]">
-                  <div className="relative rounded-[1.5rem] border border-white/[0.09] bg-white/[0.03] p-5 backdrop-blur-xl sm:p-7 lg:p-8">
+                  <div className="relative rounded-[1.5rem] border border-white/[0.09] bg-white/[0.03] p-5 backdrop-blur-none sm:backdrop-blur-xl sm:p-7 lg:p-8">
                     <NewsletterSignup variant="premium" signupLocation="newsletter_page" />
                   </div>
                 </div>

@@ -33,9 +33,9 @@ export default function ProjectsPage() {
   const list = getProjectsSorted();
 
   return (
-    <main className="relative flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden pt-20 sm:pt-24">
+    <main className="relative h-[100dvh] overflow-hidden">
       <Navbar />
-      <div className="min-h-0 flex-1 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-y-contain scroll-auto snap-y snap-proximity motion-reduce:snap-none sm:snap-mandatory [scrollbar-gutter:stable]">
+      <div className="h-full touch-pan-y overflow-x-hidden overflow-y-auto overscroll-y-none snap-y snap-mandatory scroll-py-0 motion-reduce:snap-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <ProjectsShowcase projects={list} />
       </div>
     </main>

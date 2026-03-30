@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { BfcacheRefresh } from "../components/bfcache-refresh";
 import { SiteJsonLd } from "../components/seo/site-json-ld";
 import {
   defaultIconPath,
@@ -73,6 +74,7 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body className={`${inter.variable} antialiased`}>
+        <BfcacheRefresh />
         <SiteJsonLd />
         {children}
       </body>

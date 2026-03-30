@@ -7,6 +7,7 @@ import Script from "next/script";
 import { aboutClosingLine, aboutParagraphs } from "../../lib/about-content";
 import type { BlogPostMeta } from "../../lib/blogs/types";
 import { BlogCard } from "../blog/blog-card";
+import { LeavingSiteLink } from "../leaving-site-link";
 import { CalendlyBookButton } from "./calendly-book-button";
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
@@ -161,13 +162,13 @@ export function AboutPageClient({ recentPosts }: AboutPageClientProps) {
                 Edgaze is where the product work lives: distribution, systems, and the path from
                 interest to something people rely on. If you want context before we talk, start here.
               </p>
-              <Link
-                href="/projects/edgaze"
+              <LeavingSiteLink
+                href="https://edgaze.ai"
                 className="mt-5 inline-flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-cyan-300/90 transition-colors hover:text-cyan-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/45 sm:mt-7"
               >
                 Explore Edgaze
                 <span aria-hidden>→</span>
-              </Link>
+              </LeavingSiteLink>
             </div>
 
             <div className="relative rounded-2xl border border-white/[0.08] bg-black/35 p-5 backdrop-blur-md sm:p-8">

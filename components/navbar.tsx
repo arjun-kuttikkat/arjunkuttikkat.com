@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { navLinks } from "../lib/data";
+import { LeavingSiteLink } from "./leaving-site-link";
 
 const springTransition = {
   type: "spring",
@@ -17,6 +18,9 @@ type NavbarProps = {
   projectNav?: {
     title: string;
   };
+  blogNav?: {
+    title: string;
+  };
 };
 
 function navLinkActive(pathname: string, href: string) {
@@ -24,7 +28,7 @@ function navLinkActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function Navbar({ projectNav }: NavbarProps) {
+export function Navbar({ projectNav, blogNav }: NavbarProps) {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -53,20 +57,20 @@ export function Navbar({ projectNav }: NavbarProps) {
               : "bg-black/46 backdrop-blur-lg"
           }`}
         >
-          {projectNav ? (
+          {projectNav || blogNav ? (
             <>
               <Link
-                href="/projects"
+                href={projectNav ? "/projects" : "/blogs"}
                 className="inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-zinc-200 transition-colors hover:text-white"
               >
                 <span aria-hidden>←</span>
-                <span className="hidden sm:inline">Projects</span>
+                <span className="hidden sm:inline">{projectNav ? "Projects" : "Blogs"}</span>
                 <span className="sm:hidden">Back</span>
               </Link>
 
               <div className="min-w-0 flex-1 px-4 text-center">
                 <p className="truncate text-sm font-semibold tracking-[-0.02em] text-white sm:text-[0.95rem]">
-                  {projectNav.title}
+                  {projectNav ? projectNav.title : blogNav?.title}
                 </p>
               </div>
 
@@ -113,12 +117,12 @@ export function Navbar({ projectNav }: NavbarProps) {
               </div>
 
               <div className="flex items-center gap-3">
-                <Link
-                  href="/projects/edgaze"
+                <LeavingSiteLink
+                  href="https://edgaze.ai"
                   className="hidden rounded-lg border border-white/18 bg-[linear-gradient(130deg,rgba(34,211,238,0.14),rgba(232,121,249,0.12))] px-4 py-2.5 text-[0.8125rem] font-medium text-white transition-all duration-300 hover:border-white/30 md:inline-flex"
                 >
                   Explore Edgaze
-                </Link>
+                </LeavingSiteLink>
 
                 <button
                   type="button"
@@ -138,7 +142,7 @@ export function Navbar({ projectNav }: NavbarProps) {
         </nav>
 
         <AnimatePresence>
-          {menuOpen && !projectNav ? (
+          {menuOpen && !projectNav && !blogNav ? (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -162,13 +166,12 @@ export function Navbar({ projectNav }: NavbarProps) {
                     </Link>
                   );
                 })}
-                <Link
-                  href="/projects/edgaze"
-                  onClick={() => setMenuOpen(false)}
+                <LeavingSiteLink
+                  href="https://edgaze.ai"
                   className="mt-1 inline-flex w-fit rounded-lg border border-white/18 bg-[linear-gradient(130deg,rgba(34,211,238,0.14),rgba(232,121,249,0.12))] px-4 py-2.5 text-[0.8125rem] font-medium text-white transition-all hover:border-white/30"
                 >
                   Explore Edgaze
-                </Link>
+                </LeavingSiteLink>
               </div>
             </motion.div>
           ) : null}

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { LeavingSiteLink } from "../leaving-site-link";
 
 type BlogPromoStripProps = {
   showEdgazeMark?: boolean;
@@ -26,12 +27,12 @@ export function BlogPromoStrip({ showEdgazeMark = false }: BlogPromoStripProps) 
           run them.
         </p>
       </div>
-      <Link
-        href="/projects/edgaze"
+      <LeavingSiteLink
+        href="https://edgaze.ai"
         className="shrink-0 self-start rounded-md border border-white/14 px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-zinc-100 transition-colors hover:border-cyan-400/35 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/45 sm:self-center"
       >
         Explore Edgaze
-      </Link>
+      </LeavingSiteLink>
     </div>
   );
 }

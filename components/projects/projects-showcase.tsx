@@ -69,7 +69,7 @@ function SceneShell({
   return (
     <section
       ref={sectionRef}
-      className="relative flex min-h-[100svh] snap-start snap-normal flex-col overflow-hidden [content-visibility:auto] [contain-intrinsic-size:auto_720px] sm:min-h-[100dvh] sm:snap-always"
+      className="relative flex h-[100dvh] min-h-[100dvh] snap-start flex-col overflow-hidden [content-visibility:auto] [contain-intrinsic-size:auto_720px] [scroll-snap-stop:always]"
     >
       <ProductAuroraBurst
         mode={burstMode}
@@ -78,7 +78,7 @@ function SceneShell({
         motionActive={isInView}
       />
 
-      <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 py-20 sm:py-24">
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pb-12 pt-28 sm:px-8 sm:pb-16 sm:pt-32">
         <div className="flex w-full max-w-xl flex-col items-center text-center">{body}</div>
         <div className="relative z-10 mt-12 sm:mt-16">
           <ShowcaseProgress current={progressIndex} total={progressTotal} />
@@ -141,7 +141,7 @@ export function ProjectsShowcase({ projects }: ProjectsShowcaseProps) {
   const totalScenes = projects.length + 2;
 
   return (
-    <div className="bg-[#06060c] pb-16 sm:pb-20">
+    <div className="bg-[#06060c]">
       <SceneShell progressIndex={0} progressTotal={totalScenes} aurora={{ mode: "intro" }}>
         <h1 className="text-pretty text-4xl font-semibold tracking-[-0.04em] text-white drop-shadow-[0_2px_32px_rgba(0,0,0,0.5)] sm:text-5xl">
           Projects

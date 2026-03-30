@@ -77,7 +77,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   const allMeta = getPublishedPostsMeta();
   const related = getRelatedPosts(post, allMeta, 3);
-  const { prev, next } = getAdjacentPublishedPosts(slug);
+  const { next } = getAdjacentPublishedPosts(slug);
   const url = absoluteUrl(`/blogs/${slug}`);
 
   const absoluteImage =
@@ -123,7 +123,7 @@ export default async function BlogPostPage({ params }: PageProps) {
       <main className="relative min-h-screen pt-20 sm:pt-24">
         <BlogProgressBar />
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-64 bg-[radial-gradient(ellipse_at_50%_-30%,rgba(232,121,249,0.06),transparent_58%)]" />
-        <Navbar />
+        <Navbar blogNav={{ title: post.title }} />
         <article className="hyphens-none mx-auto max-w-6xl px-4 pb-24 sm:px-6 lg:px-8">
           <header className="mx-auto max-w-[46rem] border-b border-white/[0.07] pb-10 pt-4">
             <p className="text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-zinc-500">
@@ -196,7 +196,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
             <BlogShareBar url={url} title={post.title} />
             <RelatedPosts posts={related} />
-            <BlogPostNav prev={prev} next={next} />
+            <BlogPostNav next={next} />
             <BlogPromoArticleFooter />
           </div>
         </article>

@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { LeavingSiteLink } from "./leaving-site-link";
 
 const fadeUp = {
   initial: { opacity: 0, y: 22 },
@@ -38,10 +39,10 @@ export function Hero() {
             className="relative max-w-xl text-pretty text-4xl font-semibold leading-[1.05] tracking-[-0.02em] text-white sm:text-5xl lg:text-[3.85rem] lg:leading-[1.06]"
           >
             <span className="block">
-              Turning AI workflows into products
+              Most AI workflows never get used
             </span>
             <span className="mt-3 block text-[1.35rem] font-medium leading-snug tracking-[-0.015em] text-zinc-400 sm:mt-3.5 sm:text-2xl lg:text-[1.65rem]">
-              Founder of Edgaze
+              I’m building what makes them runnable, usable, and worth paying for
             </span>
           </motion.h1>
 
@@ -59,12 +60,12 @@ export function Hero() {
             transition={{ duration: 0.55, delay: 0.18 }}
             className="flex flex-wrap items-center gap-4 pt-1"
           >
-            <Link
-              href="/projects/edgaze"
+            <LeavingSiteLink
+              href="https://edgaze.ai"
               className="rounded-full border border-cyan-300/50 bg-gradient-to-r from-cyan-300/22 to-fuchsia-300/22 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:border-cyan-200/80 hover:from-cyan-300/38 hover:to-fuchsia-300/38"
             >
               Explore Edgaze
-            </Link>
+            </LeavingSiteLink>
             <Link
               href="/projects"
               className="rounded-full border border-white/20 bg-white/[0.02] px-5 py-2.5 text-sm font-semibold text-zinc-100 transition-colors hover:border-white/40 hover:text-white"
@@ -73,13 +74,6 @@ export function Hero() {
             </Link>
           </motion.div>
 
-          <motion.p
-            {...fadeUp}
-            transition={{ duration: 0.55, delay: 0.26 }}
-            className="text-sm text-zinc-400"
-          >
-            Based between Dubai and India
-          </motion.p>
         </div>
 
         <motion.div
