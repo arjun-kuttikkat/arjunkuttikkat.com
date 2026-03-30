@@ -1,0 +1,230 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --site-bg: #050507;
+  --text-main: #f5f5f7;
+}
+
+* {
+  border-color: rgb(255 255 255 / 0.1);
+}
+
+html,
+body {
+  min-height: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: 7rem;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(
+      80rem 32rem at 88% -10%,
+      rgb(232 121 249 / 0.12),
+      transparent 55%
+    ),
+    radial-gradient(
+      76rem 34rem at 16% -12%,
+      rgb(34 211 238 / 0.14),
+      transparent 52%
+    ),
+    linear-gradient(
+      to bottom,
+      rgb(255 255 255 / 0.018),
+      transparent 18%,
+      rgb(255 255 255 / 0.012) 46%,
+      transparent 82%,
+      rgb(255 255 255 / 0.018)
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgb(255 255 255 / 0.01) 0px,
+      rgb(255 255 255 / 0.01) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    var(--site-bg);
+  color: var(--text-main);
+  --font-blog-serif: var(--font-inter);
+  font-family:
+    var(--font-inter),
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.055;
+  background-image: radial-gradient(rgb(255 255 255 / 0.55) 0.6px, transparent 0.6px);
+  background-size: 3px 3px;
+}
+
+a {
+  text-decoration: none;
+}
+
+::selection {
+  background: rgb(34 211 238 / 0.25);
+  color: white;
+}
+
+/* Edgaze project card — workflow line pulse */
+@keyframes edgaze-flow-dash {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+@keyframes edgaze-node-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+/* Projects section headline — subtle typewriter caret */
+@keyframes type-caret {
+  0%,
+  40% {
+    opacity: 0.85;
+  }
+  50%,
+  100% {
+    opacity: 0.2;
+  }
+}
+
+/* Edgaze workflow visual — rocket launch inside SVG screen (CSS; Framer SVG <g> transform is unreliable) */
+@keyframes edgaze-rocket-rise {
+  0% {
+    transform: translateY(56%);
+    opacity: 0;
+  }
+  10% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  72% {
+    transform: translateY(-320%);
+    opacity: 1;
+  }
+  78% {
+    transform: translateY(-320%);
+    opacity: 0;
+  }
+  79%,
+  100% {
+    transform: translateY(82%);
+    opacity: 0;
+  }
+}
+
+.edgaze-workflow-rocket-shift {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .edgaze-workflow-rocket-shift--run {
+    animation: edgaze-rocket-rise 2.85s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+    animation-delay: 0.15s;
+  }
+}
+
+/* Newsletter signup — CTA shimmer */
+@keyframes newsletter-cta-shimmer {
+  0% {
+    transform: translateX(-100%) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-12deg);
+  }
+}
+
+.newsletter-cta-shimmer-track {
+  animation: newsletter-cta-shimmer 2.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .newsletter-cta-shimmer-track {
+    animation: none !important;
+  }
+}
+
+.blog-heading-permalink {
+  margin-left: 0.4rem;
+  font-weight: 500;
+  color: rgb(161 161 170);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+h2:hover .blog-heading-permalink,
+h3:hover .blog-heading-permalink,
+h4:hover .blog-heading-permalink,
+.blog-heading-permalink:focus-visible {
+  opacity: 1;
+}
+
+.blog-heading-hash {
+  font-size: 0.82em;
+  letter-spacing: 0.02em;
+}
+
+/* Blog posts: no automatic line-end hyphenation */
+.blog-article {
+  hyphens: none;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+/* —— rehype-pretty-code —— */
+[data-rehype-pretty-code-figure] {
+  border-radius: 0.75rem;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background: linear-gradient(165deg, rgb(12 12 14), rgb(6 6 8));
+  overflow: hidden;
+}
+
+[data-rehype-pretty-code-title] {
+  display: block;
+  width: 100%;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  padding: 0.55rem 1rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(161 161 170);
+}
+
+[data-rehype-pretty-code-figure] pre {
+  margin: 0;
+  padding: 1rem 1.1rem 1.15rem;
+  overflow-x: auto;
+  background: transparent !important;
+}
+
+[data-rehype-pretty-code-figure] code {
+  font-family:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.65;
+}

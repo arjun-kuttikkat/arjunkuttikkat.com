@@ -1,0 +1,28 @@
+Site: arjunkuttikkat.com
+Owner: Arjun Kuttikkat
+Primary topics: Edgaze, AI workflows, product execution, distribution, founder notes, project case studies
+
+Summary:
+This is the personal site of Arjun Kuttikkat, founder of Edgaze. It contains project pages, blog posts, an about page, a newsletter page, and a terminal-style interactive route. The most useful sources for factual retrieval are the blog articles, project pages, and sitemap/feed URLs listed below.
+
+Crawl policy:
+- Public site content may be indexed, summarized, and cited.
+- Prefer canonical URLs when available.
+- Prefer the RSS feed and sitemap for discovery.
+
+Important URLs:
+- Home: https://arjunkuttikkat.com/
+- About: https://arjunkuttikkat.com/about
+- Projects: https://arjunkuttikkat.com/projects
+- Blogs: https://arjunkuttikkat.com/blogs
+- Newsletter: https://arjunkuttikkat.com/newsletter
+- Terminal: https://arjunkuttikkat.com/terminal
+- RSS feed: https://arjunkuttikkat.com/feed.xml
+- Sitemap: https://arjunkuttikkat.com/sitemap.xml
+- Robots: https://arjunkuttikkat.com/robots.txt
+
+Priority paths:
+- /projects/edgaze
+- /projects/arjunkuttikkat-com
+- /blogs/why-im-building-edgaze
+- /blogs/distribution-and-discoverability
