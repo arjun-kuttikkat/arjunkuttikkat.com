@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import { Footer } from "../footer";
+import { LeavingSiteLink } from "../leaving-site-link";
 import { Navbar } from "../navbar";
 import type { Project } from "../../lib/projects";
 import { EdgazeWorkflowBackdrop } from "./edgaze-workflow-backdrop";
@@ -20,6 +21,8 @@ type ParagraphSectionProps = {
   align?: "left" | "right";
   delay?: number;
 };
+
+const EDGAZE_HREF = "https://edgaze.ai";
 
 const sections: ParagraphSectionProps[] = [
   {
@@ -217,6 +220,24 @@ export function EdgazeProjectPage({ project }: EdgazeProjectPageProps) {
                   Turn AI workflows into real, executable products.
                 </p>
 
+                <div className="mt-8 flex flex-wrap items-center gap-3">
+                  <LeavingSiteLink
+                    href={EDGAZE_HREF}
+                    className="inline-flex items-center justify-center rounded-full border border-cyan-300/35 bg-[linear-gradient(130deg,rgba(34,211,238,0.16),rgba(232,121,249,0.12))] px-5 py-2.5 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-white shadow-[0_18px_60px_rgba(0,0,0,0.38)] transition-all hover:border-cyan-200/55 hover:bg-[linear-gradient(130deg,rgba(34,211,238,0.22),rgba(232,121,249,0.16))] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/45"
+                    leavingText="Visit Edgaze to see workflows as products."
+                  >
+                    Visit Edgaze
+                  </LeavingSiteLink>
+                  <a
+                    href={EDGAZE_HREF}
+                    className="inline-flex items-center justify-center rounded-full border border-white/12 bg-white/[0.03] px-5 py-2.5 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-zinc-200 transition-colors hover:border-white/20 hover:bg-white/[0.06] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/35"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    edgaze.ai
+                  </a>
+                </div>
+
                 <p className="mt-8 max-w-[44rem] text-pretty text-[1.04rem] leading-[1.95] text-zinc-300 sm:text-[1.12rem]">
                   Edgaze is the system I am building to turn AI workflows into something that can
                   actually be used, shared, and paid for in a consistent way. Right now most
@@ -317,6 +338,47 @@ export function EdgazeProjectPage({ project }: EdgazeProjectPageProps) {
                 </p>
               </div>
             </motion.section>
+          </div>
+        </section>
+
+        <section className="px-6 pb-20 sm:px-8 sm:pb-24">
+          <div className="mx-auto max-w-6xl">
+            <motion.div
+              {...sectionReveal(reduced, 0.29)}
+              className="relative overflow-hidden rounded-[2.25rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(255,255,255,0.02))] px-6 py-8 shadow-[0_32px_120px_rgba(0,0,0,0.48)] backdrop-blur-xl sm:px-8 sm:py-10"
+            >
+              <PanelEdges />
+              <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-[0.7rem] font-medium uppercase tracking-[0.24em] text-zinc-500">
+                    Link
+                  </p>
+                  <h2 className="mt-3 text-balance text-[1.5rem] font-semibold tracking-[-0.035em] text-white sm:text-[1.8rem]">
+                    Explore Edgaze directly.
+                  </h2>
+                  <p className="mt-3 max-w-[44rem] text-pretty text-[0.98rem] leading-[1.85] text-zinc-300 sm:text-[1.04rem]">
+                    If you want to see where this is heading, jump to the live Edgaze surface.
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-wrap items-center gap-3">
+                  <LeavingSiteLink
+                    href={EDGAZE_HREF}
+                    className="inline-flex items-center justify-center rounded-full border border-cyan-300/35 bg-[linear-gradient(130deg,rgba(34,211,238,0.16),rgba(232,121,249,0.12))] px-5 py-2.5 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-white transition-all hover:border-cyan-200/55 hover:bg-[linear-gradient(130deg,rgba(34,211,238,0.22),rgba(232,121,249,0.16))] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/45"
+                    leavingText="Visit Edgaze to run workflows, not read them."
+                  >
+                    Visit Edgaze
+                  </LeavingSiteLink>
+                  <a
+                    href={EDGAZE_HREF}
+                    className="inline-flex items-center justify-center rounded-full border border-white/12 bg-white/[0.03] px-5 py-2.5 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-zinc-200 transition-colors hover:border-white/20 hover:bg-white/[0.06] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/35"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    edgaze.ai
+                  </a>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </section>
 

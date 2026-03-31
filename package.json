@@ -1,13 +1,16 @@
 {
   "name": "arjunkuttikkat.com",
   "version": "1.0.0",
-  "private": true,
+  "private": false,
   "description": "Personal founder website for Arjun Kuttikkat",
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [
     "nextjs",
@@ -16,6 +19,9 @@
   ],
   "author": "Arjun Kuttikkat",
   "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "framer-motion": "^12.38.0",
     "github-slugger": "^2.0.0",
@@ -45,6 +51,7 @@
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.1",
     "postcss": "^8.5.8",
+    "prettier": "^3.6.2",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3"
   }

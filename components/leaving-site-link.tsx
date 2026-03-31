@@ -24,15 +24,11 @@ export function LeavingSiteLink({
   countdownSeconds = 5,
   leavingText = "Run real AI workflows. Not demos."
 }: LeavingSiteLinkProps) {
+  const canPortal = typeof document !== "undefined";
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [remainingMs, setRemainingMs] = useState(countdownSeconds * 1000);
   const startRef = useRef<number | null>(null);
   const timerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -227,7 +223,7 @@ export function LeavingSiteLink({
       >
         {children}
       </a>
-      {mounted ? createPortal(modal, document.body) : null}
+      {canPortal ? createPortal(modal, document.body) : null}
     </>
   );
 }

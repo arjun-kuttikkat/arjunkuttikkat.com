@@ -1,6 +1,6 @@
-import { AboutPageClient } from "../../components/about/about-page-client";
 import { Footer } from "../../components/footer";
 import { Navbar } from "../../components/navbar";
+import { AboutPageClientLoader } from "../../components/about/about-page-client-loader";
 import { getPublishedPostsMeta } from "../../lib/blogs/meta";
 import type { Metadata } from "next";
 import { defaultOgImage, siteName } from "../../lib/site";
@@ -37,7 +37,7 @@ export default function AboutPage() {
         <div className="absolute inset-x-0 top-0 h-[28rem] bg-[radial-gradient(ellipse_at_50%_-10%,rgba(34,211,238,0.09),transparent_58%)]" />
       </div>
       <Navbar />
-      <AboutPageClient recentPosts={recentPosts} />
+      <AboutPageClientLoader recentPosts={recentPosts} />
       <Footer />
     </main>
   );

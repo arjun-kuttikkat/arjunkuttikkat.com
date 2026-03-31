@@ -1,0 +1,6 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com
+    about: Please see SECURITY.md for reporting security issues.
+

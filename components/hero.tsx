@@ -28,7 +28,7 @@ export function Hero() {
       </div>
 
       <div className="mx-auto grid w-full max-w-6xl gap-10 md:grid-cols-[0.88fr_1.12fr] md:items-start">
-        <div className="relative space-y-8 md:pt-20">
+        <div className="relative z-10 space-y-8 md:pt-20">
           <div
             aria-hidden
             className="pointer-events-none absolute -left-6 top-[2.5rem] h-[20rem] w-[min(32rem,calc(100%+3rem))] rounded-full bg-[radial-gradient(ellipse_70%_55%_at_48%_42%,rgba(255,255,255,0.055),rgba(34,211,238,0.04)_38%,transparent_72%)] blur-[72px] md:-left-10 md:top-[3rem]"
@@ -81,7 +81,7 @@ export function Hero() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative mx-auto w-full max-w-sm md:mr-[-4.5rem] md:mt-[84px] md:max-w-[28rem]"
+          className="pointer-events-none relative z-0 mx-auto w-full max-w-sm md:mr-[-4.5rem] md:mt-[84px] md:max-w-[28rem]"
         >
           <div className="absolute -inset-20 bg-[radial-gradient(circle_at_45%_35%,rgba(34,211,238,0.24),transparent_52%),radial-gradient(circle_at_75%_65%,rgba(232,121,249,0.2),transparent_48%)] blur-2xl" />
           <div className="relative mx-auto aspect-[4/5] w-[19rem] overflow-hidden rounded-[2.6rem] bg-transparent sm:w-[22.8rem]">

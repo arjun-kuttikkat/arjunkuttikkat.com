@@ -9,6 +9,8 @@
 </p>
 
 <p align="center">
+  <a href="./LICENSE">MIT License</a>
+  ·
   <a href="https://arjunkuttikkat.com">Live Site</a>
   ·
   <a href="#overview">Overview</a>
@@ -16,6 +18,14 @@
   <a href="#getting-started">Getting Started</a>
   ·
   <a href="#license">License</a>
+</p>
+
+<p align="center">
+  <a href="./CONTRIBUTING.md">Contributing</a>
+  ·
+  <a href="./SECURITY.md">Security</a>
+  ·
+  <a href="./CODE_OF_CONDUCT.md">Code of Conduct</a>
 </p>
 
 ## Overview
