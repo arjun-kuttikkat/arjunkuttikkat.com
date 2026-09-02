@@ -109,7 +109,10 @@ It is intentionally editorial rather than template-driven, and intentionally str
 
 The site content is intentionally split into two clear systems:
 
-- `lib/projects.ts` stores structured project metadata used throughout the projects experience.
+- `lib/projects.ts` stores structured project metadata (summary, state, snapshot, stack, links) used throughout the projects experience.
+- `lib/technologies.ts` is the technology registry: id → name, logo (Simple Icons via `react-icons/si` or a local SVG), website, optical scale. Projects declare their stack as ids.
+- `lib/edgaze.ts` holds the static, publicly verifiable facts about Edgaze (surfaces, run lifecycle, API, MCP, billing) shared by the Edgaze project page and the homepage section.
+- `components/projects/pages/*` composes one page per project from the primitives in `components/projects/detail/` (hero, section rail, figures, definition lists, flows, architecture map, stack).
 - `content/blogs/*.mdx` stores long-form writing with typed frontmatter and publishing controls.
 
 This keeps editorial content easy to maintain while preserving strong control over the presentation layer.
