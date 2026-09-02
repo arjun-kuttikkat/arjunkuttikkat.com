@@ -57,7 +57,7 @@ export function BlogIndexClient({ posts }: BlogIndexClientProps) {
               setQuery("");
               setFilter({ kind: "all" });
             }}
-            className="mt-5 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-cyan-300/90 transition-colors hover:text-cyan-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/45"
+            className="mt-5 text-[0.72rem] font-semibold tracking-[0.14em] text-cyan-300/90 transition-colors hover:text-cyan-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/45"
           >
             Reset
           </button>

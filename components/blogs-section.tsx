@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BlogCard } from "./blog/blog-card";
 import { getPublishedPostsMeta } from "../lib/blogs/meta";
+import { textLink } from "./ui/button-styles";
 
 const HOMEPAGE_BLOG_LIMIT = 6;
 
@@ -10,19 +11,16 @@ export function BlogsSection() {
   if (posts.length === 0) return null;
 
   return (
-    <section id="blogs" className="px-6 pb-28 pt-4 lg:px-10">
+    <section id="blogs" className="px-6 pb-28 pt-8 lg:px-10">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-medium tracking-wide text-zinc-400">Blogs</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-              Latest writing
+            <p className="text-xs font-medium tracking-[0.08em] text-zinc-400">Writing</p>
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+              Latest posts
             </h2>
           </div>
-          <Link
-            href="/blogs"
-            className="inline-flex shrink-0 items-center gap-2 text-[0.8125rem] font-semibold text-cyan-300/90 transition-colors hover:text-cyan-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/45"
-          >
+          <Link href="/blogs" className={`${textLink} shrink-0`}>
             View all posts
             <span aria-hidden>→</span>
           </Link>

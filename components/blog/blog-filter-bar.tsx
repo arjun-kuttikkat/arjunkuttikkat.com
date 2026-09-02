@@ -22,14 +22,14 @@ export function BlogFilterBar({ categories, tags, filter, onChange }: BlogFilter
   return (
     <div className="mb-10 space-y-4">
       <div>
-        <p className="mb-2 text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-zinc-600">
+        <p className="mb-2 text-[0.62rem] font-semibold tracking-[0.06em] text-zinc-600">
           Category
         </p>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => onChange({ kind: "all" })}
-            className={`rounded-full border px-3.5 py-1.5 text-[0.72rem] font-medium uppercase tracking-[0.08em] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/45 ${pillActive(filter.kind === "all")}`}
+            className={`rounded-full border px-3.5 py-1.5 text-[0.72rem] font-medium tracking-[0.08em] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/45 ${pillActive(filter.kind === "all")}`}
           >
             All
           </button>
@@ -47,7 +47,7 @@ export function BlogFilterBar({ categories, tags, filter, onChange }: BlogFilter
       </div>
       {tags.length ? (
         <div>
-          <p className="mb-2 text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-zinc-600">
+          <p className="mb-2 text-[0.62rem] font-semibold tracking-[0.06em] text-zinc-600">
             Tags
           </p>
           <div className="-mx-1 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">

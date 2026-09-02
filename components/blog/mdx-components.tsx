@@ -171,7 +171,7 @@ export function getBlogMdxComponents() {
       </tr>
     ),
     th: ({ children, ...rest }: ComponentPropsWithoutRef<"th">) => (
-      <th className="px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-zinc-400" {...rest}>
+      <th className="px-4 py-3 text-[0.68rem] font-semibold tracking-[0.12em] text-zinc-400" {...rest}>
         {children}
       </th>
     ),

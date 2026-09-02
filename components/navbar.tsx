@@ -121,7 +121,7 @@ export function Navbar({ projectNav, blogNav }: NavbarProps) {
                   href="https://edgaze.ai"
                   className="hidden rounded-lg border border-white/18 bg-[linear-gradient(130deg,rgba(34,211,238,0.14),rgba(232,121,249,0.12))] px-4 py-2.5 text-[0.8125rem] font-medium text-white transition-all duration-300 hover:border-white/30 md:inline-flex"
                 >
-                  Explore Edgaze
+                  Visit Edgaze
                 </LeavingSiteLink>
 
                 <button
@@ -170,7 +170,7 @@ export function Navbar({ projectNav, blogNav }: NavbarProps) {
                   href="https://edgaze.ai"
                   className="mt-1 inline-flex w-fit rounded-lg border border-white/18 bg-[linear-gradient(130deg,rgba(34,211,238,0.14),rgba(232,121,249,0.12))] px-4 py-2.5 text-[0.8125rem] font-medium text-white transition-all hover:border-white/30"
                 >
-                  Explore Edgaze
+                  Visit Edgaze
                 </LeavingSiteLink>
               </div>
             </motion.div>

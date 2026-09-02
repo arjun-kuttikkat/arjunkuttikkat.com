@@ -32,7 +32,7 @@ export function BlogCard({ post }: BlogCardProps) {
           )}
         </div>
         <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
-          <p className="text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+          <p className="text-[0.62rem] font-semibold tracking-[0.06em] text-zinc-500">
             {post.category}
           </p>
           <h2 className="mt-2 font-[family-name:var(--font-blog-serif)] text-lg font-medium leading-snug tracking-[-0.02em] text-white sm:text-[1.15rem]">
@@ -53,7 +53,7 @@ export function BlogCard({ post }: BlogCardProps) {
               {post.tags.slice(0, 3).map((t) => (
                 <span
                   key={t}
-                  className="rounded border border-white/[0.07] px-2 py-0.5 text-[0.62rem] uppercase tracking-[0.1em] text-zinc-500"
+                  className="rounded border border-white/[0.07] px-2 py-0.5 text-[0.62rem] tracking-[0.1em] text-zinc-500"
                 >
                   {t}
                 </span>

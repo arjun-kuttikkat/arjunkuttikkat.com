@@ -13,7 +13,7 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
     <section className="mt-16 border-t border-white/[0.08] pt-12" aria-labelledby="related-heading">
       <h2
         id="related-heading"
-        className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-zinc-500"
+        className="text-[0.68rem] font-semibold tracking-[0.08em] text-zinc-500"
       >
         Related
       </h2>
@@ -38,7 +38,7 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
                 )}
               </div>
               <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.68rem] font-semibold tracking-[0.16em] text-zinc-500">
                   <span>{p.category}</span>
                   <span className="text-zinc-600" aria-hidden>
                     ·

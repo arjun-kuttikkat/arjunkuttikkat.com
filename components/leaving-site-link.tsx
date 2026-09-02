@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FaArrowRight, FaArrowUpRightFromSquare, FaXmark } from "react-icons/fa6";
+import { trackEvent } from "../lib/analytics";
 
 type LeavingSiteLinkProps = {
   href: string;
@@ -22,7 +23,7 @@ export function LeavingSiteLink({
   className,
   children,
   countdownSeconds = 5,
-  leavingText = "Run real AI workflows. Not demos."
+  leavingText = "Opening edgaze.ai in this tab."
 }: LeavingSiteLinkProps) {
   const canPortal = typeof document !== "undefined";
   const [open, setOpen] = useState(false);
@@ -54,7 +55,9 @@ export function LeavingSiteLink({
   }, [totalMs]);
 
   const go = useCallback(() => {
-    window.location.assign(href);
+    trackEvent("outbound_click", { href, location: window.location.pathname });
+    // Give the beacon a tick to leave before the document unloads.
+    window.setTimeout(() => window.location.assign(href), 50);
   }, [href]);
 
   const begin = useCallback(() => {
@@ -134,8 +137,8 @@ export function LeavingSiteLink({
             <div className="relative p-6 sm:p-7">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                    You’re heading to Edgaze
+                  <p className="text-[0.65rem] font-semibold tracking-[0.08em] text-zinc-500">
+                    Leaving arjunkuttikkat.com
                   </p>
                   <p className="mt-3 text-[0.98rem] font-medium leading-relaxed text-zinc-200">
                     {leavingText}
@@ -190,7 +193,7 @@ export function LeavingSiteLink({
                 <button
                   type="button"
                   onClick={close}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.03] px-4 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-zinc-200 transition-colors hover:border-white/20 hover:bg-white/[0.06] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/45"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.03] px-4 py-2 text-[0.75rem] font-semibold tracking-[0.14em] text-zinc-200 transition-colors hover:border-white/20 hover:bg-white/[0.06] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/45"
                 >
                   <FaXmark className="h-4 w-4" aria-hidden="true" />
                   Cancel
@@ -198,9 +201,9 @@ export function LeavingSiteLink({
                 <button
                   type="button"
                   onClick={go}
-                  className="inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-[linear-gradient(130deg,rgba(34,211,238,0.16),rgba(232,121,249,0.12))] px-4 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-white transition-all hover:border-cyan-200/55 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/45"
+                  className="inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-[linear-gradient(130deg,rgba(34,211,238,0.16),rgba(232,121,249,0.12))] px-4 py-2 text-[0.75rem] font-semibold tracking-[0.14em] text-white transition-all hover:border-cyan-200/55 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/45"
                 >
-                  Go now
+                  Continue
                   <FaArrowRight className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>

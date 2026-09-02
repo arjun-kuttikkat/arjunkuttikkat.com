@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 import { NewsletterLanding } from "../../components/newsletter-landing";
+import { JsonLd } from "../../components/seo/json-ld";
+import { buildBreadcrumb, homeCrumb } from "../../lib/seo/breadcrumbs";
 import { defaultOgImage, siteName } from "../../lib/site";
 
 export const metadata: Metadata = {
   title: "Newsletter",
   description:
-    "Execution notes, distribution reality, and product decisions from the field. Occasional, high signal email when something is worth sending.",
+    "Occasional notes from building Edgaze: what shipped, what broke, what changed. No schedule.",
   alternates: { canonical: "/newsletter" },
   openGraph: {
     title: `Newsletter | ${siteName}`,
     description:
-      "Execution notes and distribution reality from building products, including Edgaze when it matters. No cadence for its own sake.",
+      "Occasional notes from building Edgaze: what shipped, what broke, what changed. No schedule.",
     url: "/newsletter",
     type: "website",
     images: [defaultOgImage]
@@ -19,11 +21,21 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `Newsletter | ${siteName}`,
     description:
-      "Execution notes and distribution reality from building products. Occasional email, founder written, worth the interruption.",
+      "Occasional notes from building Edgaze: what shipped, what broke, what changed. No schedule.",
     images: [defaultOgImage.url]
   }
 };
 
 export default function NewsletterPage() {
-  return <NewsletterLanding />;
+  const breadcrumb = buildBreadcrumb([
+    homeCrumb(),
+    { name: "Newsletter", path: "/newsletter" }
+  ]);
+
+  return (
+    <>
+      <JsonLd data={breadcrumb} />
+      <NewsletterLanding />
+    </>
+  );
 }

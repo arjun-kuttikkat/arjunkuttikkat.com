@@ -65,7 +65,7 @@ export function BlogImage({ src, alt, caption, width = 1200, height = 675 }: Blo
         >
           <button
             type="button"
-            className="absolute right-5 top-5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium uppercase tracking-[0.12em] text-zinc-100 transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
+            className="absolute right-5 top-5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium tracking-[0.12em] text-zinc-100 transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
             onClick={(e) => {
               e.stopPropagation();
               close();

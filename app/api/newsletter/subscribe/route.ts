@@ -190,7 +190,7 @@ export async function POST(request: Request) {
       ok: true,
       state: existed ? ("already_subscribed" as const) : ("subscribed" as const),
       message: existed
-        ? "You are already subscribed — list updated."
+        ? "You are already subscribed. List updated."
         : "You are in. Watch your inbox."
     },
     { status: 200 }

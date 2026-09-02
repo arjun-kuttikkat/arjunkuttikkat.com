@@ -8,8 +8,8 @@ export function BlogHero() {
         Blogs
       </h1>
       <p className="mt-6 max-w-2xl text-[1.05rem] leading-relaxed text-zinc-400 sm:text-[1.12rem] sm:leading-[1.72]">
-        Posts and notes on building products, AI, leverage, and execution. A founder journal—sharp,
-        practical, occasionally opinionated.
+        Notes from building Edgaze and getting it used: product decisions, distribution, and what
+        broke along the way.
       </p>
     </header>
   );

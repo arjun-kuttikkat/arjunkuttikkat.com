@@ -31,7 +31,7 @@ export function BlogCodeFigure({ children, className, ...rest }: BlogCodeFigureP
         <button
           type="button"
           onClick={() => void copy()}
-          className="pointer-events-auto rounded-md border border-white/14 bg-[#0c0c0f]/95 px-2.5 py-1 text-[0.65rem] font-medium uppercase tracking-[0.14em] text-zinc-200 shadow-[0_8px_24px_rgba(0,0,0,0.45)] transition-colors hover:border-white/22 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
+          className="pointer-events-auto rounded-md border border-white/14 bg-[#0c0c0f]/95 px-2.5 py-1 text-[0.65rem] font-medium tracking-[0.14em] text-zinc-200 shadow-[0_8px_24px_rgba(0,0,0,0.45)] transition-colors hover:border-white/22 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
         >
           {copied ? "Copied" : "Copy"}
         </button>

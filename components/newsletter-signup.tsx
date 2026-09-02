@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useState } from "react";
+import { trackEvent } from "../lib/analytics";
 
 export type NewsletterSignupVariant = "full" | "premium" | "footer";
 
@@ -34,10 +35,10 @@ const premiumShell =
   "group relative flex flex-col overflow-hidden rounded-[1.5rem] border border-white/[0.14] bg-[linear-gradient(168deg,rgba(255,255,255,0.1)_0%,rgba(34,211,238,0.05)_18%,rgba(244,114,182,0.04)_32%,rgba(255,255,255,0.02)_48%,rgba(0,0,0,0.5)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-1px_0_rgba(0,0,0,0.35),0_0_0_1px_rgba(34,211,238,0.07),0_32px_100px_rgba(0,0,0,0.55),0_0_50px_rgba(34,211,238,0.08),0_0_70px_rgba(244,114,182,0.05)] backdrop-blur-2xl transition-[border-color,box-shadow] duration-500 focus-within:border-cyan-200/35 focus-within:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_0_0_1px_rgba(34,211,238,0.28),0_0_80px_rgba(34,211,238,0.14),0_0_90px_rgba(244,114,182,0.1),0_32px_100px_rgba(0,0,0,0.55)] lg:flex-row lg:items-stretch lg:rounded-[1.75rem]";
 
 const premiumInput =
-  "min-h-[3.85rem] w-full min-w-0 flex-1 border-0 bg-transparent px-6 py-5 text-lg leading-snug tracking-[-0.025em] text-zinc-50 outline-none placeholder:text-zinc-500/90 sm:min-h-[4.1rem] sm:px-7 sm:text-[1.125rem] lg:min-h-[4.65rem] lg:px-9 lg:py-6 lg:text-xl lg:tracking-[-0.03em] lg:border-r lg:border-white/[0.12]";
+  "min-h-[3.85rem] w-full min-w-0 flex-1 border-0 bg-transparent px-6 py-5 text-lg leading-snug tracking-[-0.025em] text-zinc-50 outline-none placeholder:text-zinc-500/90 sm:min-h-[4.1rem] sm:px-7 sm:text-[1.125rem] lg:min-h-[4.4rem] lg:px-7 lg:py-6 lg:text-lg lg:tracking-[-0.025em] lg:border-r lg:border-white/[0.12]";
 
 const premiumButton =
-  "relative inline-flex min-h-[3.85rem] w-full shrink-0 items-center justify-center overflow-hidden rounded-b-[1.45rem] border-t border-white/[0.14] bg-[linear-gradient(168deg,rgba(165,243,252,0.42)_0%,rgba(34,211,238,0.48)_30%,rgba(244,114,182,0.44)_70%,rgba(236,72,153,0.38)_100%)] px-8 text-lg font-semibold tracking-[-0.025em] text-zinc-950 shadow-[inset_0_2px_0_rgba(255,255,255,0.45),inset_0_-12px_28px_rgba(15,23,42,0.22),0_12px_40px_rgba(34,211,238,0.3),0_0_32px_rgba(244,114,182,0.18),0_4px_0_rgba(15,23,42,0.35)] transition-[transform,filter,box-shadow] duration-300 hover:brightness-[1.05] hover:shadow-[inset_0_2px_0_rgba(255,255,255,0.55),inset_0_-12px_28px_rgba(15,23,42,0.18),0_16px_56px_rgba(34,211,238,0.36),0_0_52px_rgba(244,114,182,0.28)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-45 sm:min-h-[4.1rem] sm:text-[1.125rem] lg:min-h-0 lg:w-auto lg:min-w-[15rem] lg:rounded-none lg:rounded-r-[1.75rem] lg:border-l lg:border-t-0 lg:border-white/[0.14] lg:px-11 lg:text-xl";
+  "relative inline-flex min-h-[3.85rem] w-full shrink-0 items-center justify-center overflow-hidden rounded-b-[1.45rem] border-t border-white/[0.14] bg-[linear-gradient(168deg,rgba(165,243,252,0.42)_0%,rgba(34,211,238,0.48)_30%,rgba(244,114,182,0.44)_70%,rgba(236,72,153,0.38)_100%)] px-8 text-lg font-semibold tracking-[-0.025em] text-zinc-950 shadow-[inset_0_2px_0_rgba(255,255,255,0.45),inset_0_-12px_28px_rgba(15,23,42,0.22),0_12px_40px_rgba(34,211,238,0.3),0_0_32px_rgba(244,114,182,0.18),0_4px_0_rgba(15,23,42,0.35)] transition-[transform,filter,box-shadow] duration-300 hover:brightness-[1.05] hover:shadow-[inset_0_2px_0_rgba(255,255,255,0.55),inset_0_-12px_28px_rgba(15,23,42,0.18),0_16px_56px_rgba(34,211,238,0.36),0_0_52px_rgba(244,114,182,0.28)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-45 sm:min-h-[4.1rem] sm:text-[1.125rem] lg:min-h-0 lg:w-auto lg:min-w-[10rem] lg:rounded-none lg:rounded-r-[1.75rem] lg:border-l lg:border-t-0 lg:border-white/[0.14] lg:px-8 lg:text-lg";
 
 /** No outer card: underline field + glossy CTA, aligned to site cyan/pink */
 const footerFieldWrap =
@@ -117,10 +118,12 @@ export function NewsletterSignup({ variant, signupLocation, className = "" }: Ne
         const err = data as ApiErr;
         setErrorText(err.error ?? "Something went wrong.");
         setUi("error");
+        trackEvent("newsletter_subscribe", { location: signupLocation, result: "error" });
         return;
       }
 
       const ok = data as ApiOk;
+      trackEvent("newsletter_subscribe", { location: signupLocation, result: ok.state });
       if (ok.state === "already_subscribed") {
         setUi("success_existing");
       } else {
@@ -129,6 +132,7 @@ export function NewsletterSignup({ variant, signupLocation, className = "" }: Ne
     } catch {
       setErrorText("Network error. Try again.");
       setUi("error");
+      trackEvent("newsletter_subscribe", { location: signupLocation, result: "error" });
     }
   };
 
@@ -150,13 +154,13 @@ export function NewsletterSignup({ variant, signupLocation, className = "" }: Ne
   const statusMessage = (() => {
     if (showSuccessModal) return "";
     if (ui === "error" && errorText) return errorText;
-    if (loading) return isPremium ? "Locking this in…" : isFooter ? "Sending…" : "Sending…";
+    if (loading) return "Sending…";
     if (isPremium && email.trim().length > 0)
-      return "Subscribe when it looks right. You will get a real confirmation.";
+      return "You will get a confirmation email.";
     if (isPremium)
-      return "No spam. No schedule. I only send when there is something worth reading.";
+      return "Occasional. Unsubscribe anytime.";
     if (isFooter)
-      return "No spam. One click to leave. Only when it is worth your inbox.";
+      return "Occasional. Unsubscribe anytime.";
     return "No spam. Unsubscribe anytime.";
   })();
 
@@ -166,12 +170,12 @@ export function NewsletterSignup({ variant, signupLocation, className = "" }: Ne
     onNewsletterPage && ui === "success_existing"
       ? {
           title: "You are already on the list",
-          body: "Same rules apply: you will only hear from me when there is real signal, not a calendar."
+          body: "Nothing else to do. The next email arrives when there is something to report."
         }
       : onNewsletterPage && ui === "success_new"
         ? {
             title: "You are in",
-            body: "Confirm the note in your inbox. After that, silence until I have something that earned its place there."
+            body: "Confirm the email in your inbox. After that, the next one arrives when there is something to report."
           }
         : ui === "success_existing"
           ? {
@@ -368,12 +372,12 @@ export function NewsletterSignup({ variant, signupLocation, className = "" }: Ne
           <div className="mb-6 space-y-2">
             <h2 className="text-lg font-semibold tracking-[-0.02em] text-white sm:text-xl">Get the newsletter</h2>
             <p className="max-w-md text-sm leading-relaxed text-zinc-400">
-              Occasional notes on building, distribution, and what is working in the wild.
+              Occasional notes from building Edgaze.
             </p>
           </div>
           {formBlockFull}
           <p className="mt-4 text-sm text-zinc-500">
-            From <span className="text-zinc-300">newsletters@arjunkuttikkat.com</span> when there is something worth your time.
+            From <span className="text-zinc-300">newsletters@arjunkuttikkat.com</span>. Unsubscribe anytime.
           </p>
         </>
       )}

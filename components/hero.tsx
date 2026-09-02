@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { LeavingSiteLink } from "./leaving-site-link";
+import { buttonPrimary, buttonSecondary } from "./ui/button-styles";
 
 const fadeUp = {
   initial: { opacity: 0, y: 22 },
@@ -51,8 +52,9 @@ export function Hero() {
             transition={{ duration: 0.55, delay: 0.12 }}
             className="max-w-[30rem] text-base leading-relaxed text-zinc-300 sm:text-lg"
           >
-            AI workflows, monetization, distribution, and internet products
-            built for real use.
+            Founder of Edgaze, a marketplace and hosted runtime where AI workflows
+            are built, published, and run per use. Everything here is a record of
+            that work.
           </motion.p>
 
           <motion.div
@@ -60,17 +62,11 @@ export function Hero() {
             transition={{ duration: 0.55, delay: 0.18 }}
             className="flex flex-wrap items-center gap-4 pt-1"
           >
-            <LeavingSiteLink
-              href="https://edgaze.ai"
-              className="rounded-full border border-cyan-300/50 bg-gradient-to-r from-cyan-300/22 to-fuchsia-300/22 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:border-cyan-200/80 hover:from-cyan-300/38 hover:to-fuchsia-300/38"
-            >
-              Explore Edgaze
+            <LeavingSiteLink href="https://edgaze.ai" className={buttonPrimary}>
+              Visit Edgaze
             </LeavingSiteLink>
-            <Link
-              href="/projects"
-              className="rounded-full border border-white/20 bg-white/[0.02] px-5 py-2.5 text-sm font-semibold text-zinc-100 transition-colors hover:border-white/40 hover:text-white"
-            >
-              View Projects
+            <Link href="/projects" className={buttonSecondary}>
+              View projects
             </Link>
           </motion.div>
 

@@ -33,7 +33,7 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent lg:bg-gradient-to-r" />
           </div>
           <div className="flex flex-col justify-center px-6 py-8 sm:px-10 sm:py-10">
-            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-cyan-300/80">
+            <p className="text-[0.65rem] font-semibold tracking-[0.08em] text-cyan-300/80">
               Featured
             </p>
             <h2 className="mt-3 font-[family-name:var(--font-blog-serif)] text-[1.65rem] font-medium leading-tight tracking-[-0.03em] text-white transition-colors group-hover:text-white sm:text-[1.85rem]">
@@ -53,13 +53,13 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
                   <span className="text-zinc-600" aria-hidden>
                     ·
                   </span>
-                  <span className="rounded-md border border-white/10 px-2 py-0.5 text-[0.65rem] uppercase tracking-[0.12em] text-zinc-400">
+                  <span className="rounded-md border border-white/10 px-2 py-0.5 text-[0.65rem] tracking-[0.12em] text-zinc-400">
                     {post.readingBadge}
                   </span>
                 </>
               ) : null}
             </div>
-            <span className="mt-8 inline-flex w-fit items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-zinc-200 transition-colors group-hover:text-white">
+            <span className="mt-8 inline-flex w-fit items-center gap-2 text-[0.72rem] font-semibold tracking-[0.14em] text-zinc-200 transition-colors group-hover:text-white">
               Read post
               <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
                 →

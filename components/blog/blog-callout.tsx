@@ -17,7 +17,7 @@ export function BlogCallout({ variant = "note", title, children }: BlogCalloutPr
       role="note"
     >
       {title ? (
-        <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-zinc-200">
+        <p className="mb-2 text-[0.72rem] font-semibold tracking-[0.16em] text-zinc-200">
           {title}
         </p>
       ) : null}

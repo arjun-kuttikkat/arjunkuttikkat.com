@@ -13,6 +13,7 @@ import {
   FaWhatsapp,
   FaXTwitter
 } from "react-icons/fa6";
+import { trackEvent } from "../../lib/analytics";
 
 type BlogShareBarProps = {
   url: string;
@@ -21,16 +22,18 @@ type BlogShareBarProps = {
 
 export function BlogShareBar({ url, title }: BlogShareBarProps) {
   const [copied, setCopied] = useState(false);
+  const slug = url.replace(/\/$/, "").split("/").pop() ?? url;
 
   const copy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(url);
+      trackEvent("blog_copy_link", { slug });
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
       setCopied(false);
     }
-  }, [url]);
+  }, [slug, url]);
 
   const enc = encodeURIComponent;
   const shareText = `${title} ${url}`;
@@ -84,7 +87,7 @@ export function BlogShareBar({ url, title }: BlogShareBarProps) {
 
   return (
     <div className="flex flex-wrap items-center gap-3 border-t border-white/[0.08] pt-8">
-      <span className="mr-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+      <span className="mr-0.5 text-[0.65rem] font-semibold tracking-[0.06em] text-zinc-500">
         Share
       </span>
       <button
@@ -110,6 +113,7 @@ export function BlogShareBar({ url, title }: BlogShareBarProps) {
             aria-label={`Share on ${label}`}
             title={`Share on ${label}`}
             className={buttonClass}
+            onClick={() => trackEvent("blog_share", { network: label, slug })}
           >
             <Icon className={iconClass} aria-hidden="true" />
           </a>
