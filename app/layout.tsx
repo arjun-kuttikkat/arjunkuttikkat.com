@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { BfcacheRefresh } from "../components/bfcache-refresh";
 import { SiteJsonLd } from "../components/seo/site-json-ld";
+import { SiteAnalytics } from "../components/site-analytics";
 import {
-  defaultIconPath,
   defaultOgImage,
+  iconPaths,
   siteDescription,
   siteKeywords,
   siteName,
@@ -28,10 +29,14 @@ export const metadata: Metadata = {
   description: siteDescription,
   keywords: siteKeywords,
   icons: {
-    icon: defaultIconPath,
-    shortcut: defaultIconPath,
-    apple: defaultIconPath
+    icon: [
+      { url: iconPaths.icon192, sizes: "192x192", type: "image/png" },
+      { url: iconPaths.icon512, sizes: "512x512", type: "image/png" }
+    ],
+    shortcut: iconPaths.icon192,
+    apple: [{ url: iconPaths.appleTouch, sizes: "180x180", type: "image/png" }]
   },
+  manifest: "/manifest.webmanifest",
   alternates: {
     canonical: siteUrl,
     types: {
@@ -73,10 +78,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
+      <head>
+        {/* llmstxt.org discovery file: helps LLMs find and ingest site content. */}
+        <link rel="llms-txt" href="/llms.txt" />
+      </head>
       <body className={`${inter.variable} antialiased`}>
         <BfcacheRefresh />
         <SiteJsonLd />
         {children}
+        <SiteAnalytics />
       </body>
     </html>
   );

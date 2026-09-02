@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "seo:audit": "node scripts/seo-audit.mjs"
   },
   "keywords": [
     "nextjs",
@@ -23,11 +24,13 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "framer-motion": "^12.38.0",
     "github-slugger": "^2.0.0",
     "gray-matter": "^4.0.3",
     "mdast-util-to-string": "^4.0.0",
-    "next": "^16.2.1",
+    "next": "^16.3.4",
     "next-mdx-remote": "^6.0.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -49,7 +52,7 @@
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.27",
     "eslint": "^9.39.4",
-    "eslint-config-next": "^16.2.1",
+    "eslint-config-next": "^16.3.4",
     "postcss": "^8.5.8",
     "prettier": "^3.6.2",
     "tailwindcss": "^4.2.2",

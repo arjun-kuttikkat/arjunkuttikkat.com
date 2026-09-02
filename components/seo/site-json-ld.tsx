@@ -1,38 +1,36 @@
 import {
-  absoluteImageUrl,
-  absoluteUrl,
-  contactEmail,
-  defaultOgImagePath,
-  siteDescription,
-  siteName,
-  siteUrl
-} from "../../lib/site";
+  edgazeNode,
+  organizationNode,
+  personImageNode,
+  personNode,
+  universityNode,
+  websiteNode
+} from "../../lib/seo/entity";
 
+export {
+  personId,
+  websiteId,
+  organizationId,
+  edgazeId
+} from "../../lib/seo/entity";
+
+/**
+ * The site-wide entity graph, emitted once from the root layout.
+ *
+ * One `@graph` with stable `@id`s means Google sees a single connected entity
+ * (person → company → product → university) rather than repeated, unlinked
+ * copies on every page. Page-level JSON-LD elsewhere references these by `@id`.
+ */
 export function SiteJsonLd() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
-      {
-        "@type": "Person",
-        "@id": absoluteUrl("/#person"),
-        name: siteName,
-        url: siteUrl,
-        image: absoluteImageUrl(defaultOgImagePath),
-        description: siteDescription,
-        jobTitle: "Founder, Edgaze",
-        email: `mailto:${contactEmail}`
-      },
-      {
-        "@type": "WebSite",
-        "@id": absoluteUrl("/#website"),
-        url: siteUrl,
-        name: siteName,
-        description: siteDescription,
-        inLanguage: "en-US",
-        publisher: {
-          "@id": absoluteUrl("/#person")
-        }
-      }
+      personNode(),
+      personImageNode(),
+      organizationNode(),
+      edgazeNode(),
+      universityNode(),
+      websiteNode()
     ]
   };
 
