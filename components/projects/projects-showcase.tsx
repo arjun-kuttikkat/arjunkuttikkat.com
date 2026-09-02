@@ -3,7 +3,7 @@
 import { useInView } from "framer-motion";
 import Link from "next/link";
 import { useRef, type ReactNode } from "react";
-import type { Project, ProjectAccent } from "../../lib/projects";
+import { projectStateLabel, type Project, type ProjectAccent } from "../../lib/projects";
 import { archiveThemeStyles } from "./project-archive-theme";
 import { ProductAuroraBurst } from "./product-aurora-burst";
 import { ProductMotionVisual } from "./product-motion-visual";
@@ -24,14 +24,18 @@ type AuroraConfig =
 
 function ProjectSlideDiagram({
   theme,
-  suspendMotion
+  suspendMotion,
 }: {
   theme: Project["visualTheme"];
   suspendMotion: boolean;
 }) {
   return (
     <div className="relative z-10 mt-10 w-full">
-      <ProductMotionVisual theme={theme} variant="showcase" suspendMotion={suspendMotion} />
+      <ProductMotionVisual
+        theme={theme}
+        variant="showcase"
+        suspendMotion={suspendMotion}
+      />
     </div>
   );
 }
@@ -40,7 +44,7 @@ function SceneShell({
   children,
   progressIndex,
   progressTotal,
-  aurora
+  aurora,
 }: {
   children: SceneChildren;
   progressIndex: number;
@@ -60,11 +64,10 @@ function SceneShell({
 
   const isInView = useInView(sectionRef, {
     amount: 0.2,
-    margin: "0px 0px -10% 0px"
+    margin: "0px 0px -10% 0px",
   });
 
-  const body =
-    typeof children === "function" ? children({ inView: isInView }) : children;
+  const body = typeof children === "function" ? children({ inView: isInView }) : children;
 
   return (
     <section
@@ -79,7 +82,9 @@ function SceneShell({
       />
 
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pb-12 pt-28 sm:px-8 sm:pb-16 sm:pt-32">
-        <div className="flex w-full max-w-xl flex-col items-center text-center">{body}</div>
+        <div className="flex w-full max-w-xl flex-col items-center text-center">
+          {body}
+        </div>
         <div className="relative z-10 mt-12 sm:mt-16">
           <ShowcaseProgress current={progressIndex} total={progressTotal} />
         </div>
@@ -91,7 +96,7 @@ function SceneShell({
 function ProjectSlideContent({
   project,
   theme,
-  inView
+  inView,
 }: {
   project: Project;
   theme: (typeof archiveThemeStyles)[keyof typeof archiveThemeStyles];
@@ -99,20 +104,11 @@ function ProjectSlideContent({
 }) {
   return (
     <>
-      {project.tags?.length ? (
-        <div className="mb-3 flex flex-wrap items-center justify-center gap-2">
-          {project.tags.map((tag) => (
-            <span
-              key={tag}
-              className="inline-flex rounded-full border border-white/[0.14] bg-black/35 px-3 py-1 text-xs font-medium tracking-wide text-zinc-200/95 shadow-[0_2px_16px_rgba(0,0,0,0.35)] backdrop-blur-sm"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      ) : null}
       <p className="text-sm text-zinc-300/90 drop-shadow-[0_1px_12px_rgba(0,0,0,0.4)]">
-        {project.role} · {project.year}
+        {projectStateLabel[project.state]} · {project.year}
+        {project.context ? (
+          <span className="text-zinc-400"> · {project.context}</span>
+        ) : null}
       </p>
       <h2 className="mt-4 text-pretty text-3xl font-semibold tracking-[-0.035em] text-white drop-shadow-[0_2px_28px_rgba(0,0,0,0.5)] sm:text-4xl">
         {project.name}
@@ -123,14 +119,14 @@ function ProjectSlideContent({
         {project.tagline}
       </p>
       <p className="mt-5 max-w-lg text-pretty text-[0.9375rem] leading-[1.65] text-zinc-200/90 drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)] sm:text-base sm:leading-[1.65]">
-        {project.shortDescription}
+        {project.summary}
       </p>
       <ProjectSlideDiagram theme={project.visualTheme} suspendMotion={!inView} />
       <Link
         href={`/projects/${project.slug}`}
         className={`relative z-10 mt-10 inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium shadow-[0_8px_40px_rgba(0,0,0,0.35)] backdrop-blur-sm transition-colors ${theme.pillClass} hover:bg-white/[0.08]`}
       >
-        Open project
+        View project
         <span aria-hidden>→</span>
       </Link>
     </>
@@ -142,12 +138,16 @@ export function ProjectsShowcase({ projects }: ProjectsShowcaseProps) {
 
   return (
     <div className="bg-[#06060c]">
-      <SceneShell progressIndex={0} progressTotal={totalScenes} aurora={{ mode: "intro" }}>
+      <SceneShell
+        progressIndex={0}
+        progressTotal={totalScenes}
+        aurora={{ mode: "intro" }}
+      >
         <h1 className="text-pretty text-4xl font-semibold tracking-[-0.04em] text-white drop-shadow-[0_2px_32px_rgba(0,0,0,0.5)] sm:text-5xl">
           Projects
         </h1>
         <p className="mt-6 max-w-md text-pretty text-base leading-relaxed text-zinc-200/90 drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)] sm:text-lg">
-          Things I&apos;m building or have explored—one scene at a time.
+          One live product, this site, and three hackathon builds.
         </p>
       </SceneShell>
 
@@ -168,12 +168,18 @@ export function ProjectsShowcase({ projects }: ProjectsShowcaseProps) {
                   : { mode: "accent", accent: project.accent }
             }
           >
-            {({ inView }) => <ProjectSlideContent project={project} theme={theme} inView={inView} />}
+            {({ inView }) => (
+              <ProjectSlideContent project={project} theme={theme} inView={inView} />
+            )}
           </SceneShell>
         );
       })}
 
-      <SceneShell progressIndex={totalScenes - 1} progressTotal={totalScenes} aurora={{ mode: "outro" }}>
+      <SceneShell
+        progressIndex={totalScenes - 1}
+        progressTotal={totalScenes}
+        aurora={{ mode: "outro" }}
+      >
         <h2 className="text-pretty text-2xl font-semibold tracking-[-0.03em] text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)] sm:text-3xl">
           That&apos;s the list.
         </h2>
@@ -185,7 +191,7 @@ export function ProjectsShowcase({ projects }: ProjectsShowcaseProps) {
             href="/"
             className="inline-flex rounded-full border border-white/[0.14] bg-black/30 px-5 py-2.5 text-sm font-medium text-zinc-100 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-sm transition-colors hover:border-white/[0.22] hover:bg-black/40"
           >
-            Home
+            Back to home
           </Link>
         </div>
       </SceneShell>

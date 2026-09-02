@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { FaGithub, FaLinkedinIn, FaXTwitter, FaYoutube } from "react-icons/fa6";
-import { edgazeFooterLinks, navLinks, socialLinks } from "../lib/data";
+import { navLinks, socialLinks } from "../lib/data";
+import { edgazeFooterLinks } from "../lib/edgaze";
 import { getProjectsSorted } from "../lib/projects";
 import { NewsletterSignup } from "./newsletter-signup";
 
@@ -54,7 +55,7 @@ export function Footer() {
             </span>
           </Link>
           <p className="max-w-md text-[0.9375rem] leading-[1.65] text-zinc-500 sm:ml-auto sm:text-right sm:text-sm lg:max-w-sm">
-            Building products at the edge of AI and distribution. Projects, blogs, and updates live here.
+            Founder of Edgaze. Project records, writing, and a newsletter when there is something to report.
           </p>
         </div>
 
@@ -108,7 +109,7 @@ export function Footer() {
               Newsletter
             </h2>
             <p className="mt-3 max-w-md text-[0.9375rem] leading-[1.7] text-zinc-400 sm:mt-5 sm:text-[0.9rem] sm:leading-relaxed">
-              Infrequent notes when there is something concrete: product, distribution, and shipping.
+              Infrequent notes on building Edgaze: what shipped, what broke, what changed.
             </p>
             <div className="mt-6">
               <NewsletterSignup variant="footer" signupLocation="footer" />
@@ -117,7 +118,7 @@ export function Footer() {
               href="/newsletter"
               className="mt-4 inline-flex items-center gap-1.5 text-sm text-zinc-400 underline decoration-cyan-400/25 underline-offset-[6px] transition-colors hover:text-zinc-200 hover:decoration-pink-400/45 sm:mt-6"
             >
-              Why subscribe
+              About the newsletter
             </Link>
           </div>
         </div>

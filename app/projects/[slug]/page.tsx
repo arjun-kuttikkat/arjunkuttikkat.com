@@ -1,27 +1,13 @@
-import { Footer } from "../../../components/footer";
-import { Navbar } from "../../../components/navbar";
-import { AutoresolveProjectPage } from "../../../components/projects/autoresolve-project-page";
-import { HealthSignalProjectPage } from "../../../components/projects/health-signal-project-page";
-import { AuraProjectPage } from "../../../components/projects/aura-project-page";
-import { EdgazeProjectPage } from "../../../components/projects/edgaze-project-page";
-import { SiteProjectPage } from "../../../components/projects/site-project-page";
-import { ProjectDetailAurora } from "../../../components/projects/project-detail-aurora";
-import { ProjectDetailHero } from "../../../components/projects/project-detail-hero";
-import { ProjectDetailSections } from "../../../components/projects/project-detail-sections";
-import { RelatedProjects } from "../../../components/projects/related-projects";
-import {
-  getAllProjectSlugs,
-  getProjectBySlug,
-  getRelatedProjects
-} from "../../../lib/projects";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import {
-  absoluteUrl,
-  defaultOgImage,
-  siteName,
-  siteKeywords
-} from "../../../lib/site";
+import { projectPages } from "../../../components/projects/pages";
+import { JsonLd } from "../../../components/seo/json-ld";
+import { buildBreadcrumb, homeCrumb } from "../../../lib/seo/breadcrumbs";
+import { organizationId, personId, websiteId } from "../../../lib/seo/entity";
+import { getPublicImageSize } from "../../../lib/seo/image-size";
+import { getAllProjectSlugs, getProjectBySlug, projectStateLabel } from "../../../lib/projects";
+import { absoluteUrl, defaultOgImage, siteKeywords, siteName } from "../../../lib/site";
+import { stackTechnologyNames } from "../../../lib/technologies";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -40,31 +26,33 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const canonical = `/projects/${project.slug}`;
   const image = project.logo || defaultOgImage.url;
-  const keywords = [...siteKeywords, project.category, ...project.tech, ...(project.tags ?? [])];
+  const keywords = [...siteKeywords, project.category, ...stackTechnologyNames(project.stack)];
+  // Real pixel size of the logo, so previews are not laid out against a guess.
+  const logoSize = project.logo ? getPublicImageSize(project.logo) : undefined;
 
   return {
     title: project.name,
-    description: project.shortDescription,
+    description: project.summary,
     alternates: {
       canonical
     },
     keywords,
     openGraph: {
       title: `${project.name} | ${siteName}`,
-      description: project.shortDescription,
+      description: project.summary,
       url: canonical,
       type: "website",
       siteName,
       images: [
         project.logo
-          ? { url: image, width: 1200, height: 1200, alt: `${project.name} logo` }
+          ? { url: image, ...(logoSize ?? {}), alt: `${project.name} logo` }
           : defaultOgImage
       ]
     },
     twitter: {
       card: "summary_large_image",
       title: `${project.name} | ${siteName}`,
-      description: project.shortDescription,
+      description: project.summary,
       images: [image]
     }
   };
@@ -73,92 +61,68 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ProjectDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const project = getProjectBySlug(slug);
-  if (!project) notFound();
+  const Page = project ? projectPages[project.slug] : undefined;
+  if (!project || !Page) notFound();
 
-  const related = getRelatedProjects(project.slug, 3);
   const projectUrl = absoluteUrl(`/projects/${project.slug}`);
-  const projectImage = project.logo ? absoluteUrl(project.logo) : undefined;
+  const logoSize = project.logo ? getPublicImageSize(project.logo) : undefined;
+
   const projectJsonLd = {
     "@context": "https://schema.org",
     "@type": "CreativeWork",
+    "@id": `${projectUrl}#project`,
     name: project.name,
-    description: project.shortDescription,
+    description: project.summary,
+    abstract: project.tagline,
     url: projectUrl,
     genre: project.category,
-    keywords: [...project.tech, ...(project.tags ?? [])].join(", "),
-    creator: {
-      "@type": "Person",
-      name: siteName
-    },
-    ...(projectImage ? { image: projectImage } : {})
+    creativeWorkStatus: projectStateLabel[project.state],
+    keywords: stackTechnologyNames(project.stack).join(", "),
+    dateCreated: project.year,
+    inLanguage: "en-US",
+    // Reference the site's Person entity by @id so the creator consolidates
+    // with the homepage Person (knowledge panel, entity trust).
+    creator: { "@id": personId },
+    author: { "@id": personId },
+    publisher: { "@id": organizationId },
+    isPartOf: { "@id": absoluteUrl("/projects") },
+    ...(project.logo
+      ? {
+          image: {
+            "@type": "ImageObject",
+            url: absoluteUrl(project.logo),
+            contentUrl: absoluteUrl(project.logo),
+            ...(logoSize ?? {})
+          }
+        }
+      : {})
   };
-  const jsonLdScript = (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(projectJsonLd) }}
-    />
-  );
 
-  if (project.slug === "edgaze") {
-    return (
-      <>
-        {jsonLdScript}
-        <EdgazeProjectPage project={project} />
-      </>
-    );
-  }
+  const webPage = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": projectUrl,
+    url: projectUrl,
+    name: project.name,
+    description: project.summary,
+    isPartOf: { "@id": websiteId },
+    inLanguage: "en-US",
+    about: { "@id": personId },
+    mainEntity: { "@id": `${projectUrl}#project` }
+  };
 
-  if (project.slug === "arjunkuttikkat-com") {
-    return (
-      <>
-        {jsonLdScript}
-        <SiteProjectPage project={project} />
-      </>
-    );
-  }
-
-  if (project.slug === "aura") {
-    return (
-      <>
-        {jsonLdScript}
-        <AuraProjectPage project={project} />
-      </>
-    );
-  }
-
-  if (project.slug === "autoresolve") {
-    return (
-      <>
-        {jsonLdScript}
-        <AutoresolveProjectPage project={project} />
-      </>
-    );
-  }
-
-  if (project.slug === "health-signal") {
-    return (
-      <>
-        {jsonLdScript}
-        <HealthSignalProjectPage project={project} />
-      </>
-    );
-  }
+  const breadcrumb = buildBreadcrumb([
+    homeCrumb(),
+    { name: "Projects", path: "/projects" },
+    { name: project.name }
+  ]);
 
   return (
     <>
-      {jsonLdScript}
-      <main className="relative min-h-screen pt-20 sm:pt-24">
-        <ProjectDetailAurora mode="accent" accent={project.accent} />
-        <div className="relative z-10">
-          <Navbar projectNav={{ title: project.name }} />
-          <ProjectDetailHero
-            project={project}
-          />
-          <ProjectDetailSections project={project} />
-          <RelatedProjects projects={related} />
-          <Footer />
-        </div>
-      </main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(projectJsonLd) }} />
+      <JsonLd data={breadcrumb} />
+      <JsonLd data={webPage} />
+      <Page project={project} />
     </>
   );
 }

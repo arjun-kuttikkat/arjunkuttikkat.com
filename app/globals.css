@@ -77,25 +77,6 @@ a {
   color: white;
 }
 
-/* Edgaze project card — workflow line pulse */
-@keyframes edgaze-flow-dash {
-  to {
-    stroke-dashoffset: -24;
-  }
-}
-
-@keyframes edgaze-node-pulse {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.08);
-  }
-}
-
 /* Projects section headline — subtle typewriter caret */
 @keyframes type-caret {
   0%,

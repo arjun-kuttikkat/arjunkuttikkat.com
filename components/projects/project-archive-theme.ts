@@ -12,7 +12,6 @@ type ArchiveThemeStyle = {
   stageBackground: string;
   stageMesh: string;
   glowClass: string;
-  logoFrameClass: string;
   logoTextClass: string;
 };
 
@@ -32,7 +31,6 @@ export const archiveThemeStyles: Record<ProjectVisualTheme, ArchiveThemeStyle> =
     stageMesh:
       "bg-[linear-gradient(to_right,rgba(255,255,255,0.024)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)]",
     glowClass: "bg-white/8",
-    logoFrameClass: "border-white/16 bg-white/[0.04]",
     logoTextClass: "text-white"
   },
   workflow: {
@@ -50,7 +48,6 @@ export const archiveThemeStyles: Record<ProjectVisualTheme, ArchiveThemeStyle> =
     stageMesh:
       "bg-[linear-gradient(to_right,rgba(255,255,255,0.022)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.018)_1px,transparent_1px)]",
     glowClass: "bg-fuchsia-400/12",
-    logoFrameClass: "border-fuchsia-400/22 bg-fuchsia-400/[0.07]",
     logoTextClass: "text-fuchsia-100"
   },
   route: {
@@ -68,7 +65,6 @@ export const archiveThemeStyles: Record<ProjectVisualTheme, ArchiveThemeStyle> =
     stageMesh:
       "bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.016)_1px,transparent_1px)]",
     glowClass: "bg-amber-400/12",
-    logoFrameClass: "border-amber-400/22 bg-amber-400/[0.07]",
     logoTextClass: "text-amber-100"
   },
   resolver: {
@@ -86,7 +82,6 @@ export const archiveThemeStyles: Record<ProjectVisualTheme, ArchiveThemeStyle> =
     stageMesh:
       "bg-[linear-gradient(to_right,rgba(255,255,255,0.022)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.018)_1px,transparent_1px)]",
     glowClass: "bg-teal-400/12",
-    logoFrameClass: "border-teal-400/22 bg-teal-400/[0.07]",
     logoTextClass: "text-teal-100"
   },
   signal: {
@@ -104,7 +99,6 @@ export const archiveThemeStyles: Record<ProjectVisualTheme, ArchiveThemeStyle> =
     stageMesh:
       "bg-[linear-gradient(to_right,rgba(255,255,255,0.022)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.018)_1px,transparent_1px)]",
     glowClass: "bg-violet-400/12",
-    logoFrameClass: "border-violet-400/22 bg-violet-400/[0.07]",
     logoTextClass: "text-violet-100"
   }
 };

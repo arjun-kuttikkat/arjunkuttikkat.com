@@ -1,257 +1,475 @@
-export type ProjectStatus = "Live" | "Building" | "Exploring";
+import { edgazeLinks } from "./edgaze";
+import type { StackGroup } from "./technologies";
+
+/**
+ * Where a project actually stands. Rendered verbatim, so wording is deliberately plain.
+ * - live: shipped and in use
+ * - beta: shipped publicly, still being developed
+ * - hackathon: built for a hackathon, not deployed
+ * - prototype: research / exploration, not deployed
+ */
+export type ProjectState = "live" | "beta" | "hackathon" | "prototype";
+
+export const projectStateLabel: Record<ProjectState, string> = {
+  live: "Live",
+  beta: "Public beta",
+  hackathon: "Hackathon build",
+  prototype: "Prototype",
+};
 
 export type ProjectLink = {
   label: string;
   href: string;
+  /** primary = the main destination (site, product). source = code. */
+  kind: "primary" | "source" | "docs" | "other";
 };
 
 export type ProjectAccent = "cyan" | "fuchsia" | "amber" | "teal" | "violet";
-export type ProjectVisualTheme = "editorial" | "workflow" | "route" | "resolver" | "signal";
+export type ProjectVisualTheme =
+  | "editorial"
+  | "workflow"
+  | "route"
+  | "resolver"
+  | "signal";
+
+export type SnapshotItem = { label: string; value: string };
 
 export type Project = {
   slug: string;
   name: string;
-  shortDescription: string;
+  /** One sentence. What it is, no adjectives. Used in the hero and for SEO. */
+  summary: string;
+  /** Short line under the name on index surfaces. */
   tagline: string;
+  /** The whole page in a few lines. Rendered in the TL;DR box under the hero. */
+  tldr: string[];
   category: string;
-  status: ProjectStatus;
+  state: ProjectState;
+  /** Plain-language note next to the state, e.g. "since Feb 2026" or "not deployed". */
+  stateNote: string;
   year: string;
   role: string;
-  overview: string;
-  problem: string;
-  solution: string;
-  outcome: string;
-  tech: string[];
+  /** People I built it with, if any. */
+  team?: string;
+  /** Event / context line, e.g. hackathon name. */
+  context?: string;
+  snapshot: SnapshotItem[];
+  stack: StackGroup[];
   links: ProjectLink[];
+  /** Optional context shown directly under the hero actions. */
+  sourceNote?: string;
   accent: ProjectAccent;
   featured: boolean;
   order: number;
   homeOrder: number;
   logo: string;
-  motif: string;
-  archiveSummary: string;
   visualTheme: ProjectVisualTheme;
   surfaceClass: string;
   hoverAuraA: string;
   hoverAuraB: string;
   hoverGlow: string;
   homeTeaser: string;
-  /** Shown on the full-screen projects page (e.g. Hackathon project). */
-  tags?: string[];
 };
 
 export const projects: Project[] = [
   {
     slug: "edgaze",
     name: "Edgaze",
-    tagline: "Turn AI workflows into real, executable products.",
-    shortDescription:
-      "Edgaze is the execution infrastructure I am building to turn AI workflows into something that can actually be used, shared, and paid for with structure, traceability, and reliability.",
-    category: "AI / Creator",
-    status: "Building",
-    year: "2025 — present",
-    role: "Founder",
-    overview:
-      "Edgaze is the system I am building to turn AI workflows into something that can actually be used, shared, and paid for in a consistent way.",
-    problem:
-      "Most AI workflows exist as chats, scattered prompts, or documents that break the moment someone tries to reuse them.",
-    solution:
-      "Edgaze treats workflows as systems with defined inputs, controlled execution, and runnable surfaces that can be shared, distributed, and monetized.",
-    outcome:
-      "Under active development with strong validation through direct outreach and real conversations, while reliability is improved continuously across a large surface area.",
-    tech: [
-      "Next.js",
-      "TypeScript",
-      "Supabase",
-      "PostgreSQL",
-      "Stripe",
-      "Vercel",
-      "Execution Engine",
-      "Streaming Architecture",
-      "Model Abstraction Layer"
+    summary:
+      "Edgaze lets creators turn AI workflows into products other people can run and pay for: on the web, through an API, or from an AI agent.",
+    tagline: "Runnable AI workflows, sold per run.",
+    tldr: [
+      "Creators publish AI workflows as products other people can run and pay for per use, instead of selling prompt packs and instructions buyers have to rebuild.",
+      "Build the graph in Workflow Studio, publish it, and Edgaze turns it into a product page with its own input form, price, and run button.",
+      "The same published workflow is one product in three places: the marketplace, a REST API, and an MCP client used by agents.",
+      "The hard part is after Run: every run is a record that keeps status, output, usage, and billing in agreement, and each publish is an immutable version so updates never change a past purchase.",
+      "Four layers underneath — product, platform, runtime, providers — with eleven independently monitored services on a public status page.",
+      "Live and operating in production, with per-run billing and creator payouts in place. The platform is now focused on acquiring creators and buyers.",
     ],
-    links: [],
+    category: "AI infrastructure",
+    state: "live",
+    stateNote: "operating in production",
+    year: "2025 to present",
+    role: "Founder",
+    context: "Edge Platforms, Inc.",
+    snapshot: [
+      {
+        label: "What it does",
+        value:
+          "Creators build a workflow graph in Workflow Studio and publish it. Buyers run it from a product page, a REST API, or an MCP client, and pay per run.",
+      },
+      {
+        label: "Who it is for",
+        value:
+          "Creators who want to sell an outcome instead of a prompt; developers and agents that need a workflow as a callable unit.",
+      },
+      {
+        label: "What I build",
+        value:
+          "The product end to end: Studio, execution runtime, public API and MCP server, billing and payouts, documentation.",
+      },
+      {
+        label: "Status",
+        value:
+          "Live in production. Per-run billing and creator payouts are active. Eleven services are monitored on a public status page.",
+      },
+    ],
+    stack: [
+      {
+        title: "Interface",
+        note: "Marketplace, product pages, Workflow Studio.",
+        items: ["nextjs", "react", "typescript", "tailwind", "reactflow"],
+      },
+      {
+        title: "Application",
+        note: "App, REST API, and MCP server all deploy to Vercel.",
+        items: ["nodejs", "vercel", "zod"],
+      },
+      {
+        title: "Execution",
+        note: "Durable orchestration, workers, and run events.",
+        items: ["temporal", "azureContainerApps", "redis"],
+      },
+      {
+        title: "Data and identity",
+        note: "Managed databases, auth, and storage.",
+        items: ["supabase", "azurePostgres", "azureRedis"],
+      },
+      {
+        title: "Models",
+        note: "Hosted, creator-connected, or buyer BYOK keys.",
+        items: ["openai", "anthropic", "gemini", "kimi", "deepseek"],
+      },
+      {
+        title: "Cloud",
+        note: "Azure hosts platform-funded model capacity and managed services.",
+        items: ["azure"],
+      },
+      {
+        title: "Payments",
+        note: "Wallet and bundle checkout, creator payouts.",
+        items: ["stripe", "stripeConnect"],
+      },
+      {
+        title: "Distribution",
+        note: "The same published workflow, three callers.",
+        items: ["openapi", "mcp", "sse", "webhooks"],
+      },
+      {
+        title: "Analytics",
+        items: [
+          "posthog",
+          "mixpanel",
+          "vercelAnalytics",
+          "speedInsights",
+          "googleTagManager",
+          "googleAds",
+        ],
+      },
+      {
+        title: "Security and delivery",
+        items: ["cloudflare", "github"],
+      },
+    ],
+    links: [
+      { label: "Visit Edgaze", href: edgazeLinks.home, kind: "primary" },
+      { label: "View documentation", href: edgazeLinks.docs, kind: "docs" },
+      {
+        label: "Explore public projects",
+        href: "https://github.com/edgaze-ai",
+        kind: "source",
+      },
+    ],
+    sourceNote:
+      "The core Edgaze platform is proprietary and closed source. Public work includes the OpenAPI specification and MCP manifests, with more coming soon.",
     accent: "fuchsia",
     featured: true,
     order: 1,
     homeOrder: 2,
     logo: "/edgaze-mark.png",
-    motif: "workflow",
-    archiveSummary:
-      "Edgaze is the execution infrastructure I am building to package, run, distribute, and monetize AI workflows as real products.",
     visualTheme: "workflow",
     hoverGlow: "group-hover:drop-shadow-[0_0_24px_rgba(232,121,249,0.6)]",
     surfaceClass:
       "bg-gradient-to-br from-cyan-400/28 via-zinc-950 via-45% to-fuchsia-500/26",
     hoverAuraA: "bg-fuchsia-400/10",
     hoverAuraB: "bg-cyan-400/10",
-    homeTeaser: "Execution infrastructure for AI workflows."
+    homeTeaser: "Marketplace and runtime for AI workflows. Build, publish, run per use.",
   },
   {
     slug: "arjunkuttikkat-com",
     name: "arjunkuttikkat.com",
-    tagline: "My corner of the internet.",
-    shortDescription:
-      "My corner of the internet, built to present what I am actually building with clarity and intent.",
+    summary:
+      "The site you are reading: a public record of what I build, how the products work, and what I learned making them.",
+    tagline: "The site you are reading.",
+    tldr: [
+      "The site is open source under the MIT License, so its implementation and history can be inspected on GitHub.",
+      "This site exists so the work has one legible record instead of being rebuilt from links and messages in every conversation.",
+      "Project pages are records, not summaries: each one gets its own story and length, so a platform and a weekend prototype are not flattened into the same template.",
+      "Design rules are few: Inter everywhere, colour kept to the edges of a black surface, motion only on entry, and real screenshots instead of invented diagrams.",
+      "Next.js App Router, prerendered at build time. Projects are typed data, posts are MDX validated with Zod, and one newsletter endpoint is the only dynamic route.",
+      "Deployed continuously, MIT licensed, and rewritten whenever the status of the work changes.",
+    ],
     category: "Personal site",
-    status: "Live",
-    year: "2025 — present",
-    role: "Founder",
-    overview:
-      "My corner of the internet, built to present what I am actually building with clarity and intent.",
-    problem:
-      "Context was scattered across links, messages, and half-updated write-ups, which made real work feel fragmented.",
-    solution:
-      "A single surface where projects, writing, and updates are structured for fast understanding, then deeper reading when it matters.",
-    outcome:
-      "Live. This is the default link I send when someone wants a clear view of what I’m doing without back-and-forth context building.",
-    tech: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Framer Motion", "Vercel"],
-    links: [{ label: "Live site", href: "https://arjunkuttikkat.com" }],
+    state: "live",
+    stateNote: "deployed continuously",
+    year: "2025 to present",
+    role: "Design and engineering",
+    snapshot: [
+      {
+        label: "What it does",
+        value:
+          "Project records, blog posts from MDX, a newsletter signup backed by Brevo, RSS, sitemap, and JSON-LD for every page.",
+      },
+      {
+        label: "Why it exists",
+        value:
+          "One link that answers what I am building without a call. Every project page is written as a record, not a pitch.",
+      },
+      {
+        label: "Rendering",
+        value:
+          "Next.js App Router. Every route is prerendered at build time. The newsletter endpoint is the only dynamic route.",
+      },
+      {
+        label: "Source",
+        value:
+          "MIT licensed. Content lives in the repo: projects in TypeScript, posts in MDX.",
+      },
+    ],
+    stack: [
+      { title: "Framework", items: ["nextjs", "react", "typescript"] },
+      { title: "Interface", items: ["tailwind", "framer"] },
+      {
+        title: "Content",
+        items: ["mdx", "zod"],
+        note: "remark-gfm, rehype-slug, autolinked headings, Shiki highlighting through rehype-pretty-code.",
+      },
+      { title: "Newsletter", items: ["brevo"] },
+      { title: "Delivery", items: ["vercel", "github"] },
+    ],
+    links: [
+      { label: "Visit site", href: "https://arjunkuttikkat.com", kind: "primary" },
+      {
+        label: "View on GitHub",
+        href: "https://github.com/arjun-kuttikkat/arjunkuttikkat.com",
+        kind: "source",
+      },
+    ],
     accent: "cyan",
     featured: false,
     order: 2,
     homeOrder: 1,
     logo: "/logo.png",
-    motif: "editorial",
-    archiveSummary:
-      "A single, deliberate surface for projects and writing—built for clarity, credibility, and fast understanding.",
     visualTheme: "editorial",
     hoverGlow: "group-hover:drop-shadow-[0_0_22px_rgba(34,211,238,0.55)]",
     surfaceClass: "bg-gradient-to-br from-cyan-300/10 via-black to-black",
     hoverAuraA: "bg-cyan-400/10",
     hoverAuraB: "bg-sky-300/10",
-    homeTeaser: "A deliberate surface for clarity and intent."
+    homeTeaser: "This site. Next.js, MDX, static generation.",
   },
   {
     slug: "aura",
     name: "Aura",
-    tagline: "The Physical to Digital Marketplace",
-    shortDescription:
-      "A Solana mobile marketplace exploration that replaces blind trust in peer-to-peer meetups with verification, escrow, NFC handover proofs, and on-chain receipts.",
-    category: "Mobile / Commerce",
-    status: "Exploring",
+    summary:
+      "An Android marketplace prototype on Solana where an in-person sale is enforced by escrow, co-presence checks, an NFC-signed handover, and an on-chain receipt.",
+    tagline: "Peer-to-peer sales without trusting the other person.",
+    tldr: [
+      "Marketplace sales break where the software stops: two people leave the app to meet, and nothing can verify the item, the money, or the handover.",
+      "Aura splits trust three ways — the phone guides the exchange, Solana holds the money, and a secure NFC tag proves the physical object was there.",
+      "Four steps: the seller records the item, the buyer locks funds in an Anchor escrow, both devices confirm co-presence, and the tap releases escrow and mints an on-chain receipt.",
+      "The handover had to be provable. An NTAG 424 DNA tag signs a fresh message on every tap and the backend verifies it, so a screenshot or replay cannot stand in for the tap.",
+      "Kotlin and Compose on Android, Anchor and Metaplex on Solana, Supabase Edge Functions for verification.",
+      "A complete hackathon prototype from the Monolith Solana Mobile Hackathon, built with Wasif Waseem and Huaicheng Su. Not deployed, no users.",
+    ],
+    category: "Mobile / commerce",
+    state: "hackathon",
+    stateNote: "not deployed",
     year: "2026",
     role: "Builder",
-    tags: ["Hackathon project"],
-    overview:
-      "Aura explores verifiable physical commerce: escrow on Solana, device-level checks at meetup, NFC-signed handover, and on-chain ownership records—built for the Monolith Solana Mobile Hackathon.",
-    problem:
-      "In-person peer-to-peer trade still depends on screenshots, vague chats, and trust at the exchange, with weak guarantees on authenticity, funds, and proof of handover.",
-    solution:
-      "A prototype flow that binds listings, escrow, presence, NFC cryptographic proof, and settlement so outcomes are enforced by the system rather than assumed between people.",
-    outcome:
-      "Working hackathon prototype with Wasif Waseem and Huaicheng Su, demonstrating end-to-end verified exchange—not a shipped consumer product.",
-    tech: [
-      "Kotlin",
-      "Android Compose",
-      "Solana",
-      "Anchor",
-      "Metaplex",
-      "Supabase",
-      "Edge Functions",
-      "Helius RPC",
-      "NFC NTAG 424 DNA",
-      "Google ML Kit"
+    team: "with Wasif Waseem and Huaicheng Su",
+    context: "Monolith Solana Mobile Hackathon",
+    snapshot: [
+      {
+        label: "What it does",
+        value:
+          "A buyer locks funds in escrow before meeting. At the meetup both devices verify presence, the item's NFC tag signs the handover, and settlement releases funds and mints a receipt.",
+      },
+      {
+        label: "Why",
+        value:
+          "Marketplace meetups still run on screenshots and trust. Aura tests whether each step can be verified instead.",
+      },
+      {
+        label: "What we built",
+        value:
+          "Kotlin app with Compose, Anchor programs for escrow and settlement, a Supabase backend that verifies NFC proofs.",
+      },
+      {
+        label: "Result",
+        value:
+          "Working end-to-end demo of listing → escrow → handover → receipt. Not a shipped consumer product.",
+      },
     ],
-    links: [],
+    stack: [
+      { title: "Mobile", items: ["kotlin", "compose", "android"] },
+      { title: "Chain", items: ["solana", "anchor", "metaplex", "helius"] },
+      {
+        title: "Backend",
+        items: ["supabase"],
+        note: "Edge Functions verify NFC payloads and coordinate settlement so keys never reach the client.",
+      },
+      { title: "Hardware & vision", items: ["nfc", "mlkit"] },
+    ],
+    links: [
+      {
+        label: "View on GitHub",
+        href: "https://github.com/arjun-kuttikkat/Aura",
+        kind: "source",
+      },
+    ],
     accent: "amber",
     featured: false,
     order: 3,
     homeOrder: 3,
     logo: "/aura.png",
-    motif: "exchange",
-    archiveSummary:
-      "Verifiable peer-to-peer commerce on Solana: escrow, NFC handover proofs, and on-chain receipts instead of blind trust at the meetup.",
     visualTheme: "route",
     hoverGlow: "group-hover:drop-shadow-[0_0_22px_rgba(251,191,36,0.55)]",
     surfaceClass: "bg-gradient-to-br from-amber-300/10 via-black to-black",
     hoverAuraA: "bg-amber-400/10",
     hoverAuraB: "bg-orange-400/10",
-    homeTeaser: "Verification-first marketplace for physical exchange."
+    homeTeaser: "Escrow, NFC handover proof, on-chain receipt. Solana hackathon.",
   },
   {
     slug: "autoresolve",
     name: "AutoResolve",
-    tagline: "A customer side dispute agent for unresolved support cases.",
-    shortDescription:
-      "A customer-side email agent that keeps disputes moving: continuous thread monitoring, guarded replies, follow-through, and human handoff when judgment matters—3rd place at the AI Agent Innovation Hackathon.",
+    summary:
+      "A customer-side email agent that watches a support thread, tracks the case, sends guarded follow-ups, and hands back to a human when a reply needs judgment.",
+    tagline: "An agent that chases your support case for you.",
+    tldr: [
+      "A week spent chasing OpenAI support showed the problem was not difficulty, it was follow-through: companies run agents on their queue, customers still work theirs by hand.",
+      "AutoResolve gives the customer an agent inside the existing Gmail thread, so neither side has to adopt a new tool.",
+      "The loop: connect Gmail and state the objective, a worker tracks the case, routine turns get drafted and sent, and anything sensitive is handed back.",
+      "The hard parts were knowing when not to send — refunds, account access, money, policy — and keeping a structured case record so a long thread is not read as a new conversation each time.",
+      "Next.js front end, Node workers on a Redis queue, PostgreSQL for case state, the Gmail API for the thread, all in Docker.",
+      "Third place in 48 hours at the AI Agent Innovation Hackathon, built with Huaicheng Su. Never run on a real inbox.",
+    ],
     category: "Automation",
-    status: "Exploring",
+    state: "hackathon",
+    stateNote: "48-hour build, not deployed",
     year: "2026",
     role: "Builder",
-    tags: ["Hackathon project"],
-    overview:
-      "AutoResolve is a hackathon prototype that acts as a persistent email agent for support disputes: it watches Gmail threads, tracks case state, sends follow-ups within guardrails, and pauses for human input when sensitivity thresholds are crossed.",
-    problem:
-      "Support and dispute resolution often stall on delay, inconsistency, and manual follow-through, not on intrinsic complexity—customers end up carrying the operational burden.",
-    solution:
-      "An orchestrated agent that monitors the inbox continuously, drafts context-aware replies, uses queues and case state for control, and routes decisions back to the user when automation would be reckless.",
-    outcome:
-      "Built in 48 hours with Huaicheng Su; 3rd place at the AI Agent Innovation Hackathon. Not deployed; validated the customer-side agent wedge.",
-    tech: [
-      "Next.js",
-      "React",
-      "TypeScript",
-      "Node.js",
-      "PostgreSQL",
-      "Redis",
-      "Docker",
-      "Gmail API",
-      "Authentication layer",
-      "Queue based orchestration"
+    team: "with Huaicheng Su",
+    context: "AI Agent Innovation Hackathon · 3rd place",
+    snapshot: [
+      {
+        label: "What it does",
+        value:
+          "Connect Gmail, describe the dispute. The agent monitors the thread, drafts replies from the case state, sends within rules, and pauses on sensitive turns.",
+      },
+      {
+        label: "Why",
+        value:
+          "A week spent chasing OpenAI support over a small issue. The work was not hard; it was follow-through.",
+      },
+      {
+        label: "What we built",
+        value:
+          "Next.js front end, Node workers on a Redis queue, Postgres case state, Gmail API thread monitoring and sending, all run locally in Docker.",
+      },
+      {
+        label: "Result",
+        value:
+          "3rd place. Validated the customer-side angle; never deployed to real inboxes.",
+      },
     ],
-    links: [],
+    stack: [
+      { title: "Interface", items: ["nextjs", "react", "typescript"] },
+      { title: "Workers & data", items: ["nodejs", "postgresql", "redis"] },
+      { title: "Integration", items: ["gmail"] },
+      { title: "Local infrastructure", items: ["docker"] },
+    ],
+    links: [
+      {
+        label: "View on GitHub",
+        href: "https://github.com/arjun-kuttikkat/AutoResolve",
+        kind: "source",
+      },
+    ],
     accent: "teal",
     featured: false,
     order: 4,
     homeOrder: 4,
     logo: "/Autoresolve.png",
-    motif: "branching",
-    archiveSummary:
-      "Customer-side dispute agent: Gmail-native monitoring, queue orchestration, guarded automation—with human handoff when it matters.",
     visualTheme: "resolver",
     hoverGlow: "group-hover:drop-shadow-[0_0_22px_rgba(45,212,191,0.55)]",
     surfaceClass: "bg-gradient-to-br from-teal-300/10 via-black to-black",
     hoverAuraA: "bg-teal-400/10",
     hoverAuraB: "bg-cyan-300/10",
-    homeTeaser: "Persistent email agent for customer-side disputes."
+    homeTeaser: "Gmail agent for support disputes. 3rd place, 48 hours.",
   },
   {
     slug: "health-signal",
     name: "Health Signal",
-    tagline: "Post surgery monitoring, structured into signals that can actually be acted on.",
-    shortDescription:
-      "Exploration of post-surgery home monitoring as legible timelines and deviation-based signals—Next.js plus Python time-series thinking—built for Future Hack with Smart Salem and Mediclinic.",
+    summary:
+      "A prototype that turns post-surgery home reports (pain, temperature, medication, symptoms) into a timeline and flags deviation from expected recovery.",
+    tagline: "Recovery data as a timeline, not a dashboard.",
+    tldr: [
+      "After surgery the monitoring continues but the interpretation stops, so patients dismiss real change or worry about normal variation.",
+      "Health Signal keeps a calm recovery timeline between patient and clinician, and leads with a plain-language summary rather than a dashboard.",
+      "Short daily check-ins on pain, temperature, medication, and symptoms become one continuous history compared against the shape recovery should take.",
+      "The design problem was where to place the boundary between normal variation and meaningful change: an alert can be technically correct and still harmful.",
+      "Mobile-first Next.js for input and summaries, Python for the time-series processing and deviation logic. No production infrastructure by choice.",
+      "A research prototype from Future Hack in Dubai Knowledge Park / DIAC. Not deployed, and not a clinical system.",
+    ],
     category: "Health",
-    status: "Exploring",
+    state: "prototype",
+    stateNote: "research build, not deployed",
     year: "2026",
     role: "Builder",
-    tags: ["Hackathon project"],
-    overview:
-      "Health Signal prototypes how continuous recovery data becomes calm summaries and clinically meaningful signals: timelines, noise-aware extraction, and presentation that reduces anxiety rather than adding dashboards.",
-    problem:
-      "After discharge, patients have unstructured streams of symptoms and vitals with little help interpreting what matters, which drives under-reaction or panic.",
-    solution:
-      "Structured timelines, deviation-from-expected recovery, and careful signal extraction so patients and clinicians get actionable clarity without drowning in raw points.",
-    outcome:
-      "Research prototype only—not deployed. Developed at Future Hack (Dubai Knowledge Park / DIAC) with Smart Salem and Mediclinic.",
-    tech: ["Next.js", "React", "TypeScript", "Python", "Time series processing", "Mobile first web architecture"],
+    context: "Future Hack · Dubai Knowledge Park / DIAC, with Smart Salem and Mediclinic",
+    snapshot: [
+      {
+        label: "What it does",
+        value:
+          "Patients log a few values a day on their phone. The system keeps a continuous timeline and compares change against an expected recovery curve rather than fixed thresholds.",
+      },
+      {
+        label: "Why",
+        value:
+          "After discharge, monitoring continues but interpretation stops. Patients under- or over-react to normal variation.",
+      },
+      {
+        label: "What I built",
+        value:
+          "Mobile-first Next.js input and summary views; Python processing for the time-series and deviation logic.",
+      },
+      {
+        label: "Result",
+        value:
+          "Research prototype shown at Future Hack. Not deployed and not a clinical system.",
+      },
+    ],
+    stack: [
+      { title: "Interface", items: ["nextjs", "react", "typescript"] },
+      {
+        title: "Analysis",
+        items: ["python"],
+        note: "Time-series processing and deviation-from-expected detection.",
+      },
+    ],
     links: [],
     accent: "violet",
     featured: false,
     order: 5,
     homeOrder: 5,
     logo: "/healthsignal.png",
-    motif: "signal",
-    archiveSummary:
-      "Post-surgery monitoring as better signals: timelines, deviation detection, and calm summaries—not more raw data.",
     visualTheme: "signal",
     hoverGlow: "group-hover:drop-shadow-[0_0_22px_rgba(129,140,248,0.55)]",
     surfaceClass: "bg-gradient-to-r from-black via-zinc-950 to-black",
     hoverAuraA: "bg-indigo-400/10",
     hoverAuraB: "bg-violet-400/10",
-    homeTeaser: "Recovery monitoring as legible, actionable signals."
-  }
+    homeTeaser: "Post-surgery timeline with deviation flags. Health hackathon.",
+  },
 ];
 
 const HOME_BENTO_SLUGS = [
@@ -259,7 +477,7 @@ const HOME_BENTO_SLUGS = [
   "aura",
   "autoresolve",
   "edgaze",
-  "health-signal"
+  "health-signal",
 ] as const;
 
 export function getProjectsHomeBento(): Project[] {

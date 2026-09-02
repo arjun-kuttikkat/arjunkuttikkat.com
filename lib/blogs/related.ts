@@ -35,3 +35,23 @@ export function getRelatedPosts(
 
   return [...scored, ...fallback].slice(0, limit);
 }
+
+/**
+ * Posts that relate to a project by tag. A post matches when one of its tags
+ * contains the project name (case-insensitive) — e.g. posts tagged "Edgaze"
+ * belong to the Edgaze project. No fallback to recent posts: a hackathon
+ * project with no matching writing should show nothing, not unrelated posts.
+ */
+export function getRelatedPostsForProject(
+  projectName: string,
+  all: BlogPostMeta[],
+  limit = 3
+): BlogPostMeta[] {
+  const needle = projectName.trim().toLowerCase();
+  if (!needle) return [];
+  return all
+    .filter((p) => p.published)
+    .filter((p) => p.tags.some((t) => t.toLowerCase().includes(needle)))
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, limit);
+}
