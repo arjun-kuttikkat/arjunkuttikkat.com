@@ -106,14 +106,25 @@ export function findFilePathBySlug(slug: string): string | undefined {
 }
 
 export function getPostMetaBySlug(slug: string): BlogPostMeta | undefined {
-  const filePath = findFilePathBySlug(slug);
-  if (!filePath) return undefined;
-  const raw = fs.readFileSync(filePath, "utf8");
-  return parseBlogFile(filePath, raw);
+  return getAllPostsMeta().find((post) => post.slug === slug);
 }
 
 export function getPublishedSlugs(): string[] {
   return getPublishedPostsMeta().map((p) => p.slug);
+}
+
+/**
+ * The markdown body of a post with frontmatter stripped. Used for LLM-friendly
+ * plain-text/markdown exports (llms.txt, per-post .md). Does not compile MDX,
+ * so it is cheap to call for every published post.
+ */
+export function getPostRawBody(slug: string): string | undefined {
+  for (const filePath of getAllBlogFiles()) {
+    const raw = fs.readFileSync(filePath, "utf8");
+    const { data, content } = matter(raw);
+    if (data.slug === slug) return content;
+  }
+  return undefined;
 }
 
 /** Newest first (same as index). Previous = older, Next = newer. */

@@ -6,6 +6,7 @@ export {
   getAllBlogFiles,
   getAllPostsMeta,
   getPostMetaBySlug,
+  getPostRawBody,
   getPublishedPostsMeta,
   getPublishedSlugs,
   parseBlogFile
