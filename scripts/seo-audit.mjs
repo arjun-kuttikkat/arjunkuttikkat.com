@@ -165,7 +165,7 @@ console.log("\n\x1b[1m/projects (hub / sitelink candidate)\x1b[0m");
   const ns = nodes(jsonLdBlocks(body));
   const coll = findType(ns, "CollectionPage");
   check("CollectionPage present", !!coll);
-  check("hasPart lists all 5 projects", coll?.hasPart?.length === 5, `${coll?.hasPart?.length}`);
+  check("hasPart lists all 6 projects", coll?.hasPart?.length === 6, `${coll?.hasPart?.length}`);
   check("BreadcrumbList present", !!findType(ns, "BreadcrumbList"));
 }
 

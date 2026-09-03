@@ -24,10 +24,11 @@ export type ProjectLink = {
   kind: "primary" | "source" | "docs" | "other";
 };
 
-export type ProjectAccent = "cyan" | "fuchsia" | "amber" | "teal" | "violet";
+export type ProjectAccent = "cyan" | "fuchsia" | "amber" | "orange" | "teal" | "violet";
 export type ProjectVisualTheme =
   | "editorial"
   | "workflow"
+  | "compass"
   | "route"
   | "resolver"
   | "signal";
@@ -268,6 +269,103 @@ export const projects: Project[] = [
     homeTeaser: "This site. Next.js, MDX, static generation.",
   },
   {
+    slug: "compass",
+    name: "Compass",
+    summary:
+      "Compass is a browser-based codebase explorer that maps files, dependencies, architecture roles, and change impact without uploading the repository.",
+    tagline: "Understand an unfamiliar codebase without uploading it.",
+    tldr: [
+      "Huaicheng Su's earlier JetBrains dependency-visualisation plugin became a broader browser-first explorer during the Collabute × TheBlock hackathon.",
+      "Open a local repository and Compass turns its files and internal dependencies into an interactive graph, with architecture roles, isolated files, and a recommended reading order.",
+      "The path is open, map, explore, ask: local parsing builds the structure before the developer follows change impact or asks a grounded question.",
+      "Selecting a file exposes its role, dependencies, dependents, and transitive change impact, with a file-scoped assistant grounded in that context.",
+      "Source stays on the machine. Collaboration publishes a derived digest of paths, identifiers, roles, packages, and dependency edges rather than repository contents.",
+      "The browser analyzer, Convex collaboration layer, grounded AI tools, and external dependency intelligence form three distinct layers.",
+      "Vite, D3, Web Workers, Convex, Groq, Context.dev, npm, PyPI, and OSV keep the implementation focused on analysis and exploration.",
+      "Released under the MIT License after the August 2026 hackathon; functional and public, but not operated as a commercial product.",
+    ],
+    category: "Developer tools",
+    state: "hackathon",
+    stateNote: "public open-source build",
+    year: "Aug 2026",
+    role: "Builder",
+    team: "with Huaicheng Su",
+    context: "Collabute × TheBlock",
+    snapshot: [
+      {
+        label: "What it does",
+        value:
+          "Maps a local repository as files and dependency edges, then exposes architecture roles, reading order, isolated files, and transitive change impact.",
+      },
+      {
+        label: "Languages",
+        value: "Java, Kotlin, JavaScript, TypeScript, and Python.",
+      },
+      {
+        label: "Privacy model",
+        value:
+          "Analysis happens in the browser. Shared projects store derived structure rather than source contents.",
+      },
+      {
+        label: "Result",
+        value:
+          "A functional public hackathon build with the analyzer, collaborative backend, dependency intelligence, tests, and an MIT licence.",
+      },
+    ],
+    stack: [
+      {
+        title: "Interface",
+        note: "Browser application and graph exploration.",
+        items: ["javascript", "vite", "d3"],
+      },
+      {
+        title: "Analysis",
+        note: "Local parsing and dependency mapping stay off the main UI thread.",
+        items: ["webWorkers", "java", "kotlin", "typescript", "python"],
+      },
+      {
+        title: "Backend",
+        note: "Realtime shared state and server-side actions.",
+        items: ["convex"],
+      },
+      {
+        title: "AI",
+        note: "Repository taxonomy, file summaries, and grounded codebase questions.",
+        items: ["groq", "gptOss"],
+      },
+      {
+        title: "Dependency intelligence",
+        note: "Package versions, advisories, and migration context.",
+        items: ["contextDev", "npmRegistry", "pypi", "osv"],
+      },
+      { title: "Deployment", items: ["vercel", "github"] },
+    ],
+    links: [
+      {
+        label: "Open Compass",
+        href: "https://compass-edgaze.vercel.app/",
+        kind: "primary",
+      },
+      {
+        label: "View source",
+        href: "https://github.com/arjun-kuttikkat/compass",
+        kind: "source",
+      },
+    ],
+    sourceNote: "Open source under the MIT License.",
+    accent: "orange",
+    featured: false,
+    order: 3,
+    homeOrder: 3,
+    logo: "/favicon.svg",
+    visualTheme: "compass",
+    hoverGlow: "group-hover:drop-shadow-[0_0_22px_rgba(232,115,31,0.6)]",
+    surfaceClass: "bg-gradient-to-br from-orange-400/14 via-black to-zinc-950",
+    hoverAuraA: "bg-orange-400/12",
+    hoverAuraB: "bg-amber-300/8",
+    homeTeaser: "Local dependency maps, change impact, and grounded codebase Q&A.",
+  },
+  {
     slug: "aura",
     name: "Aura",
     summary:
@@ -329,8 +427,8 @@ export const projects: Project[] = [
     ],
     accent: "amber",
     featured: false,
-    order: 3,
-    homeOrder: 3,
+    order: 4,
+    homeOrder: 4,
     logo: "/aura.png",
     visualTheme: "route",
     hoverGlow: "group-hover:drop-shadow-[0_0_22px_rgba(251,191,36,0.55)]",
@@ -397,8 +495,8 @@ export const projects: Project[] = [
     ],
     accent: "teal",
     featured: false,
-    order: 4,
-    homeOrder: 4,
+    order: 5,
+    homeOrder: 5,
     logo: "/Autoresolve.png",
     visualTheme: "resolver",
     hoverGlow: "group-hover:drop-shadow-[0_0_22px_rgba(45,212,191,0.55)]",
@@ -460,8 +558,8 @@ export const projects: Project[] = [
     links: [],
     accent: "violet",
     featured: false,
-    order: 5,
-    homeOrder: 5,
+    order: 6,
+    homeOrder: 6,
     logo: "/healthsignal.png",
     visualTheme: "signal",
     hoverGlow: "group-hover:drop-shadow-[0_0_22px_rgba(129,140,248,0.55)]",
@@ -477,6 +575,7 @@ const HOME_BENTO_SLUGS = [
   "aura",
   "autoresolve",
   "edgaze",
+  "compass",
   "health-signal",
 ] as const;
 

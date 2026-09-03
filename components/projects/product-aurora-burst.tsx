@@ -33,6 +33,11 @@ const accentColors: Record<ProjectAccent, { a: string; b: string; c: string }> =
     b: "rgba(249,115,22,0.45)",
     c: "rgba(245,158,11,0.32)"
   },
+  orange: {
+    a: "rgba(232,115,31,0.58)",
+    b: "rgba(96,165,250,0.38)",
+    c: "rgba(194,80,15,0.38)"
+  },
   teal: {
     a: "rgba(45,212,191,0.52)",
     b: "rgba(34,211,238,0.42)",

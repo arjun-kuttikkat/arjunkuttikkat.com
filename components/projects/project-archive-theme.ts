@@ -67,6 +67,23 @@ export const archiveThemeStyles: Record<ProjectVisualTheme, ArchiveThemeStyle> =
     glowClass: "bg-amber-400/12",
     logoTextClass: "text-amber-100"
   },
+  compass: {
+    frameClass:
+      "bg-[radial-gradient(circle_at_top_left,rgba(232,115,31,0.16),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(96,165,250,0.11),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(7,6,6,0.98)_84%)]",
+    borderClass: "border-orange-500/20",
+    pillClass: "border-orange-400/25 bg-orange-500/[0.07] text-orange-100",
+    accentTextClass: "text-orange-100",
+    accentLineClass: "from-orange-400/85 via-blue-400/45 to-transparent",
+    ambientClass: "from-orange-500/16 via-blue-400/5 to-transparent",
+    sweepClass: "from-transparent via-orange-200/18 to-transparent",
+    pointerGlow: "rgba(232,115,31,0.18)",
+    stageBackground:
+      "bg-[radial-gradient(circle_at_20%_22%,rgba(232,115,31,0.16),transparent_27%),radial-gradient(circle_at_80%_30%,rgba(96,165,250,0.10),transparent_25%),linear-gradient(180deg,#080605_0%,#060608_100%)]",
+    stageMesh:
+      "bg-[radial-gradient(circle,rgba(232,115,31,0.10)_1px,transparent_1px)] [background-size:20px_20px]",
+    glowClass: "bg-orange-500/14",
+    logoTextClass: "text-orange-100"
+  },
   resolver: {
     frameClass:
       "bg-[radial-gradient(circle_at_top_left,rgba(45,212,191,0.14),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.12),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.045),rgba(4,7,7,0.98)_84%)]",

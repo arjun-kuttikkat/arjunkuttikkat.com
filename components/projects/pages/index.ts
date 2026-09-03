@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import type { Project } from "../../../lib/projects";
 import { AuraPage } from "./aura-page";
 import { AutoresolvePage } from "./autoresolve-page";
+import { CompassPage } from "./compass-page";
 import { EdgazePage } from "./edgaze-page";
 import { HealthSignalPage } from "./health-signal-page";
 import { SitePage } from "./site-page";
@@ -15,6 +16,7 @@ export type ProjectPageComponent = ComponentType<{ project: Project }>;
 export const projectPages: Record<string, ProjectPageComponent> = {
   edgaze: EdgazePage,
   "arjunkuttikkat-com": SitePage,
+  compass: CompassPage,
   aura: AuraPage,
   autoresolve: AutoresolvePage,
   "health-signal": HealthSignalPage

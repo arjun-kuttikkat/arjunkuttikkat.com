@@ -1,0 +1,10 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Compass">
+  <defs>
+    <linearGradient id="cn" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e8731f"/>
+      <stop offset="1" stop-color="#b8500f"/>
+    </linearGradient>
+  </defs>
+  <path d="M32 10 L54 32 L32 33 Z" fill="url(#cn)"/>
+  <path d="M32 54 L10 32 L32 31 Z" fill="#f4f4f2"/>
+</svg>

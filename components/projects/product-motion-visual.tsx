@@ -14,6 +14,31 @@ const EDGAZE_ROCKET_SMOKE = [
   { cx: 0, cy: 44, rx: 14, ry: 8, driftX: 0, driftY: 34, delay: 0.3, duration: 1.12 }
 ] as const;
 
+const COMPASS_NODES = [
+  { x: 62, y: 78, r: 7, role: "orange" },
+  { x: 118, y: 42, r: 8, role: "orange" },
+  { x: 126, y: 116, r: 7, role: "blue" },
+  { x: 196, y: 76, r: 11, role: "selected" },
+  { x: 268, y: 40, r: 7, role: "orange" },
+  { x: 282, y: 106, r: 8, role: "blue" },
+  { x: 342, y: 68, r: 7, role: "blue" },
+  { x: 344, y: 126, r: 6, role: "orange" }
+] as const;
+
+const COMPASS_EDGES = [
+  [0, 1],
+  [0, 3],
+  [1, 3],
+  [2, 3],
+  [3, 4],
+  [3, 5],
+  [3, 6],
+  [4, 6],
+  [5, 6],
+  [5, 7],
+  [6, 7]
+] as const;
+
 export type ProductMotionVariant = "showcase" | "backdrop";
 
 type ProductMotionVisualProps = {
@@ -329,6 +354,104 @@ export function ProductMotionVisual({
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           />
         </div>
+      </div>
+    );
+  }
+
+  if (theme === "compass") {
+    const edgeId = `compass-edge-${uid}`;
+    const glowId = `compass-glow-${uid}`;
+
+    return (
+      <div className={wrap} aria-hidden>
+        <svg viewBox="0 0 400 160" className={svgH} fill="none">
+          <defs>
+            <linearGradient id={edgeId} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="rgb(232 115 31 / 0.72)" />
+              <stop offset="55%" stopColor="rgb(251 146 60 / 0.6)" />
+              <stop offset="100%" stopColor="rgb(96 165 250 / 0.58)" />
+            </linearGradient>
+            <radialGradient id={glowId}>
+              <stop offset="0%" stopColor="rgb(232 115 31 / 0.42)" />
+              <stop offset="100%" stopColor="rgb(232 115 31 / 0)" />
+            </radialGradient>
+          </defs>
+
+          <ellipse cx="198" cy="80" rx="82" ry="64" fill={`url(#${glowId})`} opacity="0.42" />
+
+          {COMPASS_EDGES.map(([from, to], index) => {
+            const a = COMPASS_NODES[from];
+            const b = COMPASS_NODES[to];
+            const bend = index % 2 === 0 ? -12 : 12;
+            const d = `M ${a.x} ${a.y} Q ${(a.x + b.x) / 2} ${(a.y + b.y) / 2 + bend} ${b.x} ${b.y}`;
+
+            return (
+              <g key={`${from}-${to}`}>
+                <path d={d} stroke="rgb(255 255 255 / 0.09)" strokeWidth="1.2" />
+                <motion.path
+                  d={d}
+                  stroke={`url(#${edgeId})`}
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeDasharray="3 13"
+                  initial={false}
+                  animate={run ? { strokeDashoffset: [0, -64], opacity: [0.28, 0.8, 0.28] } : undefined}
+                  transition={{
+                    duration: 3.4 + (index % 3) * 0.55,
+                    repeat: Infinity,
+                    ease: "linear",
+                    delay: index * 0.08
+                  }}
+                />
+              </g>
+            );
+          })}
+
+          {COMPASS_NODES.map((node, index) => {
+            const fill =
+              node.role === "blue"
+                ? "rgb(59 130 246 / 0.82)"
+                : node.role === "selected"
+                  ? "rgb(232 115 31)"
+                  : "rgb(194 80 15 / 0.9)";
+            const stroke = node.role === "blue" ? "rgb(147 197 253 / 0.7)" : "rgb(253 186 116 / 0.72)";
+
+            return (
+              <motion.g
+                key={`${node.x}-${node.y}`}
+                initial={false}
+                animate={run ? { y: [0, index % 2 === 0 ? -2.5 : 2.5, 0] } : undefined}
+                transition={{ duration: 4.5 + index * 0.18, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <circle cx={node.x} cy={node.y} r={node.r + 5} fill={fill} opacity="0.1" />
+                <circle cx={node.x} cy={node.y} r={node.r} fill={fill} stroke={stroke} strokeWidth="1.4" />
+              </motion.g>
+            );
+          })}
+
+          <motion.circle
+            cx="196"
+            cy="76"
+            r="17"
+            stroke="rgb(253 186 116 / 0.7)"
+            strokeWidth="1.4"
+            initial={false}
+            animate={run ? { r: [15, 23, 15], opacity: [0.75, 0, 0.75] } : undefined}
+            transition={{ duration: 2.8, repeat: Infinity, ease: "easeOut" }}
+          />
+
+          <motion.circle
+            r="3.8"
+            fill="rgb(255 237 213)"
+            initial={false}
+            animate={run ? { cx: [62, 196, 282, 342], cy: [78, 76, 106, 68], opacity: [0, 1, 1, 0] } : undefined}
+            transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          <text x="178" y="103" fill="rgb(253 186 116 / 0.7)" style={{ fontSize: 9, fontFamily: "system-ui, sans-serif" }}>
+            selected file
+          </text>
+        </svg>
       </div>
     );
   }

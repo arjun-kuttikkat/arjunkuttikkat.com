@@ -8,6 +8,7 @@ const accents: Record<ProjectAccent, [string, string]> = {
   fuchsia: ["rgba(232,121,249,0.20)", "rgba(34,211,238,0.16)"],
   cyan: ["rgba(34,211,238,0.18)", "rgba(125,211,252,0.12)"],
   amber: ["rgba(251,191,36,0.16)", "rgba(249,115,22,0.12)"],
+  orange: ["rgba(232,115,31,0.18)", "rgba(96,165,250,0.11)"],
   teal: ["rgba(45,212,191,0.16)", "rgba(34,211,238,0.12)"],
   violet: ["rgba(167,139,250,0.16)", "rgba(99,102,241,0.13)"]
 };

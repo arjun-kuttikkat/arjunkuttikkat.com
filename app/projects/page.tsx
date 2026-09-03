@@ -10,7 +10,7 @@ import { absoluteUrl, defaultOgImage, siteName, siteKeywords } from "../../lib/s
 export const metadata: Metadata = {
   title: "Projects",
   description:
-    "Projects I'm building or have explored: AI workflows, this site, mobile commerce, automation, and health data.",
+    "Projects I'm building or have explored: AI workflows, developer tools, this site, mobile commerce, automation, and health data.",
   alternates: {
     canonical: "/projects"
   },
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: `Projects | ${siteName}`,
     description:
-      "Projects I'm building or have explored: AI workflows, this site, mobile commerce, automation, and health data.",
+      "Projects I'm building or have explored: AI workflows, developer tools, this site, mobile commerce, automation, and health data.",
     url: "/projects",
     type: "website",
     images: [defaultOgImage]
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `Projects | ${siteName}`,
     description:
-      "Projects I'm building or have explored: AI workflows, this site, mobile commerce, automation, and health data.",
+      "Projects I'm building or have explored: AI workflows, developer tools, this site, mobile commerce, automation, and health data.",
     images: [defaultOgImage.url]
   }
 };
@@ -49,7 +49,7 @@ export default function ProjectsPage() {
     "@id": absoluteUrl("/projects"),
     name: "Projects",
     description:
-      "Projects I'm building or have explored: AI workflows, this site, mobile commerce, automation, and health data.",
+      "Projects I'm building or have explored: AI workflows, developer tools, this site, mobile commerce, automation, and health data.",
     url: absoluteUrl("/projects"),
     isPartOf: { "@id": websiteId },
     author: { "@id": personId },
