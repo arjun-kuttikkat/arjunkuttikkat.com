@@ -218,7 +218,7 @@ export function HomeTerminalSection({ posts = [] }: { posts?: TermPost[] }) {
                     onMinimize={minimize}
                     onFullscreen={() => {
                       trackEvent("terminal_window", { action: "zoom" });
-                      router.push("/terminal");
+                      router.push("/terminal", { transitionTypes: ["to-terminal"] });
                     }}
                   />
                 </motion.div>

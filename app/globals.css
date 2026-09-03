@@ -209,3 +209,83 @@ h4:hover .blog-heading-permalink,
   font-size: 0.8125rem;
   line-height: 1.65;
 }
+
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-group(mode-toggle),
+::view-transition-group(mode-toggle-thumb) {
+  z-index: 120;
+}
+
+::view-transition-old(.to-terminal),
+::view-transition-old(.to-web) {
+  animation: 280ms cubic-bezier(0.22, 1, 0.36, 1) both mode-fade-out;
+}
+
+::view-transition-new(.to-terminal),
+::view-transition-new(.to-web) {
+  animation: 420ms cubic-bezier(0.22, 1, 0.36, 1) 40ms both mode-fade-in;
+}
+
+::view-transition-old(.to-terminal) {
+  animation-name: mode-fade-out, mode-scale-out;
+}
+
+::view-transition-new(.to-terminal) {
+  animation-name: mode-fade-in, mode-scale-in;
+}
+
+::view-transition-old(.to-web) {
+  animation-name: mode-fade-out, mode-scale-in-reverse;
+}
+
+::view-transition-new(.to-web) {
+  animation-name: mode-fade-in, mode-scale-out-reverse;
+}
+
+@keyframes mode-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes mode-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes mode-scale-out {
+  to {
+    transform: scale(0.985);
+  }
+}
+
+@keyframes mode-scale-in {
+  from {
+    transform: scale(1.018);
+  }
+}
+
+@keyframes mode-scale-in-reverse {
+  to {
+    transform: scale(1.018);
+  }
+}
+
+@keyframes mode-scale-out-reverse {
+  from {
+    transform: scale(0.985);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}

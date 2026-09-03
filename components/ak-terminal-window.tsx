@@ -400,7 +400,7 @@ export function AKTerminalWindow({
   );
 
   const leave = useCallback(() => {
-    if (context === "route") router.push("/");
+    if (context === "route") router.push("/", { transitionTypes: ["to-web"] });
     else onClose?.();
   }, [context, onClose, router]);
 
@@ -620,7 +620,7 @@ export function AKTerminalWindow({
           "overflow-y-auto overflow-x-hidden [scrollbar-color:rgba(255,255,255,0.18)_transparent] [scrollbar-width:thin]",
           chrome
             ? "h-[min(30rem,62vh)] min-h-[20rem] px-3.5 py-3 sm:px-4 sm:py-3.5"
-            : "h-full flex-1 px-4 py-4 sm:px-6 sm:py-5",
+            : "h-full flex-1 px-4 pb-4 pt-16 sm:px-6 sm:pb-5 sm:pt-[4.25rem]",
           TEXT,
         ].join(" ")}
       >
@@ -723,7 +723,11 @@ export function AKTerminalWindow({
             active={active}
             onClose={() => onClose?.()}
             onMinimize={() => onMinimize?.()}
-            onZoom={() => (onFullscreen ? onFullscreen() : router.push("/terminal"))}
+            onZoom={() =>
+              onFullscreen
+                ? onFullscreen()
+                : router.push("/terminal", { transitionTypes: ["to-terminal"] })
+            }
           />
           <div className="pointer-events-none absolute inset-x-[84px] top-0 flex h-full items-center justify-center">
             <div
