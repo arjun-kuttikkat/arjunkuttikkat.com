@@ -147,7 +147,7 @@ export function ProjectsShowcase({ projects }: ProjectsShowcaseProps) {
           Projects
         </h1>
         <p className="mt-6 max-w-md text-pretty text-base leading-relaxed text-zinc-200/90 drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)] sm:text-lg">
-          One live product, this site, and three hackathon builds.
+          Products, systems, and experiments I’ve shipped.
         </p>
       </SceneShell>
 

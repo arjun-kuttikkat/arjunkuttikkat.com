@@ -14,21 +14,23 @@ const bentoProjects = getProjectsHomeBento();
 function gridPlacement(slug: string): string {
   switch (slug) {
     case "arjunkuttikkat-com":
-      return "order-2 md:order-none md:col-start-1 md:row-start-1";
+      return "order-2 lg:order-none lg:col-start-1 lg:row-start-1";
     case "aura":
-      return "order-3 md:order-none md:col-start-1 md:row-start-2";
+      return "order-3 lg:order-none lg:col-start-1 lg:row-start-2";
     case "autoresolve":
-      return "order-4 md:order-none md:col-start-1 md:row-start-3";
+      return "order-4 lg:order-none lg:col-start-1 lg:row-start-3";
     case "edgaze":
-      return "order-1 md:order-none md:col-start-2 md:row-start-1 md:row-span-2";
+      return "order-1 lg:order-none lg:col-start-2 lg:col-span-2 lg:row-start-1 lg:row-span-2";
     case "health-signal":
-      return "order-5 md:order-none md:col-start-2 md:row-start-3";
+      return "order-6 lg:order-none lg:col-start-3 lg:row-start-3";
+    case "compass":
+      return "order-5 lg:order-none lg:col-start-2 lg:row-start-3";
     default:
       return "";
   }
 }
 
-const PROJECTS_HEADLINE = "One live product, this site, and three hackathon builds.";
+const PROJECTS_HEADLINE = "Products, systems, and experiments I’ve shipped.";
 
 function SubtleTypeHeadline({ className }: { className: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -39,7 +41,7 @@ function SubtleTypeHeadline({ className }: { className: string }) {
   useEffect(() => {
     if (!inView || reduceMotion) return;
     if (count >= PROJECTS_HEADLINE.length) return;
-    const t = window.setTimeout(() => setCount((c) => c + 1), 42);
+    const t = window.setTimeout(() => setCount((c) => c + 1), 30);
     return () => clearTimeout(t);
   }, [inView, count, reduceMotion]);
 
@@ -89,8 +91,8 @@ function ProjectArticle({ project, index }: { project: Project; index: number })
   const groupName = isEdgaze ? "group/edgaze" : "group";
 
   const minHeights = isEdgaze
-    ? "min-h-[22rem] md:min-h-0 md:h-full"
-    : "min-h-[10.5rem] md:min-h-0";
+    ? "min-h-[22rem] lg:min-h-0 lg:h-full"
+    : "min-h-[10.5rem] lg:min-h-0";
 
   return (
     <Link
@@ -175,7 +177,7 @@ export function ProjectsSection() {
           </Link>
         </motion.div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:grid-rows-[1fr_1fr_1fr] md:gap-4 md:min-h-[min(36rem,70vh)] lg:gap-5">
+        <div className="grid grid-cols-1 gap-4 lg:min-h-[min(40rem,76vh)] lg:grid-cols-3 lg:grid-rows-[1fr_1fr_1fr] lg:gap-5">
           {bentoProjects.map((project, index) => (
             <ProjectArticle key={project.slug} project={project} index={index} />
           ))}
