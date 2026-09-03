@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { navLinks } from "../lib/data";
 import { LeavingSiteLink } from "./leaving-site-link";
+import { ModeToggle } from "./mode-toggle";
 
 const springTransition = {
   type: "spring",
@@ -74,12 +75,15 @@ export function Navbar({ projectNav, blogNav }: NavbarProps) {
                 </p>
               </div>
 
-              <Link
-                href="/"
-                className="shrink-0 text-sm font-medium text-zinc-200 transition-colors hover:text-white"
-              >
-                Home
-              </Link>
+              <div className="flex shrink-0 items-center gap-2.5">
+                <ModeToggle />
+                <Link
+                  href="/"
+                  className="text-sm font-medium text-zinc-200 transition-colors hover:text-white"
+                >
+                  Home
+                </Link>
+              </div>
             </>
           ) : (
             <>
@@ -94,7 +98,7 @@ export function Navbar({ projectNav, blogNav }: NavbarProps) {
                   height={48}
                   className="h-11 w-11 shrink-0 object-contain transition-transform duration-300 group-hover:scale-[1.02] sm:h-[3.125rem] sm:w-[3.125rem]"
                 />
-                <span className="text-[1.05rem] font-medium tracking-[-0.02em] text-zinc-100 sm:text-[1.12rem]">
+                <span className="hidden text-[1.05rem] font-medium tracking-[-0.02em] text-zinc-100 sm:inline sm:text-[1.12rem]">
                   Arjun Kuttikkat
                 </span>
               </Link>
@@ -117,6 +121,7 @@ export function Navbar({ projectNav, blogNav }: NavbarProps) {
               </div>
 
               <div className="flex items-center gap-3">
+                <ModeToggle />
                 <LeavingSiteLink
                   href="https://edgaze.ai"
                   className="hidden rounded-lg border border-white/18 bg-[linear-gradient(130deg,rgba(34,211,238,0.14),rgba(232,121,249,0.12))] px-4 py-2.5 text-[0.8125rem] font-medium text-white transition-all duration-300 hover:border-white/30 md:inline-flex"

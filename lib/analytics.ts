@@ -22,7 +22,8 @@ export type AnalyticsEvent =
   | { name: "blog_share"; props: { network: string; slug: string } }
   | { name: "blog_copy_link"; props: { slug: string } }
   | { name: "terminal_command"; props: { command: string; context: "home" | "route" } }
-  | { name: "terminal_window"; props: { action: "minimize" | "close" | "zoom" | "reopen" } };
+  | { name: "terminal_window"; props: { action: "minimize" | "close" | "zoom" | "reopen" } }
+  | { name: "mode_toggle"; props: { mode: "web" | "terminal" } };
 
 export function trackEvent<E extends AnalyticsEvent>(name: E["name"], props: E["props"]) {
   try {

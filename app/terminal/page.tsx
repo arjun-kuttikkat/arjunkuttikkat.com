@@ -1,4 +1,5 @@
 import { AKTerminalWindow } from "../../components/ak-terminal-window";
+import { ModeToggle } from "../../components/mode-toggle";
 import { JsonLd } from "../../components/seo/json-ld";
 import { buildBreadcrumb, homeCrumb } from "../../lib/seo/breadcrumbs";
 import type { Metadata } from "next";
@@ -42,6 +43,11 @@ export default function TerminalPage() {
       <JsonLd data={breadcrumb} />
       <main className="fixed inset-0 flex flex-col bg-[#101010]">
         <h1 className="sr-only">Terminal</h1>
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-[90] flex justify-end px-4 pt-4 sm:px-6">
+          <div className="pointer-events-auto">
+            <ModeToggle />
+          </div>
+        </div>
         <AKTerminalWindow
           context="route"
           posts={posts}
