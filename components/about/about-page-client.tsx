@@ -3,7 +3,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import Script from "next/script";
 import { aboutClosingLine, aboutParagraphs } from "../../lib/about-content";
 import type { BlogPostMeta } from "../../lib/blogs/types";
 import { BlogCard } from "../blog/blog-card";
@@ -25,10 +24,6 @@ export function AboutPageClient({ recentPosts }: AboutPageClientProps) {
 
   return (
     <div className="relative">
-      <Script
-        src="https://assets.calendly.com/assets/external/widget.js"
-        strategy="lazyOnload"
-      />
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <motion.div
           aria-hidden
@@ -140,68 +135,36 @@ export function AboutPageClient({ recentPosts }: AboutPageClientProps) {
       </motion.article>
 
       <motion.section
-        className="mx-auto mt-14 max-w-6xl px-4 sm:mt-28 sm:px-6"
+        className="mx-auto mt-14 max-w-2xl px-4 sm:mt-24 sm:px-6"
         initial={false}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.65, ease: easeOut }}
       >
-        <div className="relative overflow-hidden rounded-[1.75rem] border border-white/[0.1] bg-gradient-to-br from-[#0a0a0d] via-[#070708] to-[#0c0a10] p-5 shadow-[0_40px_120px_rgba(0,0,0,0.5)] sm:p-10 lg:p-12">
-          <div
-            className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-fuchsia-500/15 blur-[80px]"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-cyan-400/10 blur-[90px]"
-            aria-hidden
-          />
-
-          <div className="relative grid gap-6 lg:grid-cols-[1fr_1.05fr] lg:gap-14 lg:items-center">
-            <div>
-              <p className="text-[0.65rem] font-semibold tracking-[0.08em] text-zinc-500">
-                Edgaze
-              </p>
-              <h2 className="mt-2 font-[family-name:var(--font-blog-serif)] text-[1.35rem] font-medium leading-tight tracking-[-0.03em] text-white sm:mt-3 sm:text-[1.75rem]">
-                Where the work is
-              </h2>
-              <p className="mt-3 text-[0.9375rem] leading-[1.55] text-zinc-400 sm:mt-4 sm:text-[0.98rem] sm:leading-relaxed">
-                Edgaze is a live marketplace and hosted runtime for AI workflows,
-                operating in production. The project page covers the product, the runtime,
-                the API, and the stack.
-              </p>
-              <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3 sm:mt-7">
-                <Link href="/projects/edgaze" className={textLink}>
-                  View project
-                  <span aria-hidden>→</span>
-                </Link>
-                <LeavingSiteLink href="https://edgaze.ai" className={textLink}>
-                  Visit Edgaze
-                  <span aria-hidden>↗</span>
-                </LeavingSiteLink>
-              </div>
-            </div>
-
-            <div className="relative rounded-2xl border border-white/[0.08] bg-black/35 p-5 backdrop-blur-md sm:p-8">
-              <motion.div
-                aria-hidden
-                className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent"
-                initial={{ scaleX: 0 }}
-                whileInView={{ scaleX: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.9, ease: easeOut, delay: 0.15 }}
-              />
-              <p className="text-[0.65rem] font-semibold tracking-[0.08em] text-fuchsia-300/75">
-                Creators
-              </p>
-              <p className="mt-3 text-[0.9375rem] leading-[1.55] text-zinc-200 sm:mt-4 sm:text-[1.02rem] sm:leading-relaxed">
-                If you make things with AI and want to publish them as runnable, paid
-                workflows, book a call and we will go through what you have and whether
-                Edgaze fits.
-              </p>
-              <CalendlyBookButton className={`${buttonPrimary} mt-5 sm:mt-8`}>
-                Book a call
-              </CalendlyBookButton>
-            </div>
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] px-5 py-6 sm:px-8 sm:py-8">
+          <p className="text-[0.68rem] font-semibold tracking-[0.08em] text-zinc-500">
+            Edgaze
+          </p>
+          <h2 className="mt-2 font-[family-name:var(--font-blog-serif)] text-[1.35rem] font-medium leading-tight tracking-[-0.03em] text-white sm:text-[1.65rem]">
+            Book a call
+          </h2>
+          <p className="mt-3 text-[0.9375rem] leading-[1.55] text-zinc-400 sm:mt-4 sm:text-[0.98rem] sm:leading-relaxed">
+            Edgaze is a live marketplace and hosted runtime for AI workflows. If you
+            want to publish something on it, or just see whether it fits, book a
+            15-minute intro.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <CalendlyBookButton className={buttonPrimary}>
+              Book a call
+            </CalendlyBookButton>
+            <Link href="/projects/edgaze" className={textLink}>
+              View project
+              <span aria-hidden>→</span>
+            </Link>
+            <LeavingSiteLink href="https://edgaze.ai" className={textLink}>
+              Visit Edgaze
+              <span aria-hidden>↗</span>
+            </LeavingSiteLink>
           </div>
         </div>
       </motion.section>
