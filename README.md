@@ -158,6 +158,7 @@ The application will start in development mode and can then be viewed locally in
 - `npm run build` creates the production build
 - `npm run start` runs the production server
 - `npm run lint` runs ESLint across the project
+- `npm run typecheck` runs the TypeScript compiler without emitting output
 
 ## Publishing Workflow
 
