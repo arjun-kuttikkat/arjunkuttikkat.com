@@ -102,6 +102,7 @@ It is intentionally editorial rather than template-driven, and intentionally str
 |-- lib/                  # Content parsing, project data, utilities
 |-- public/               # Static assets including the site logo
 |-- package.json          # Scripts and dependencies
+|-- AGENTS.md             # Notes and conventions for coding agents
 `-- README.md
 ```
 
