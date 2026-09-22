@@ -159,6 +159,8 @@ The application will start in development mode and can then be viewed locally in
 - `npm run start` runs the production server
 - `npm run lint` runs ESLint across the project
 - `npm run typecheck` runs the TypeScript compiler without emitting output
+- `npm run format` formats the codebase with Prettier (`format:check` verifies without writing)
+- `npm run seo:audit <url>` runs SEO, structured-data, and asset checks against a running server
 
 ## Publishing Workflow
 
