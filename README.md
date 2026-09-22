@@ -151,7 +151,7 @@ Required variables:
 npm run dev
 ```
 
-The application will start in development mode and can then be viewed locally in the browser.
+The application will start in development mode and can then be viewed locally at `http://localhost:3000`.
 
 ## Available Scripts
 
