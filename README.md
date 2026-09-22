@@ -181,10 +181,10 @@ The project is structured for straightforward deployment on platforms that suppo
 
 A standard production workflow is:
 
-1. install dependencies
-2. provide environment variables
-3. run `npm run build`
-4. deploy the built application
+1. Install dependencies
+2. Provide environment variables
+3. Run `npm run build`
+4. Deploy the built application
 
 ## Contributing
 
