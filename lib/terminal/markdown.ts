@@ -7,7 +7,7 @@ import type { TermLine } from "./types";
  * not hard-wrapped; the terminal wraps them to its own width.
  */
 
-const RULE: TermLine = { text: "─".repeat(48), tone: "dim" };
+const RULE: TermLine = { text: "─".repeat(40), tone: "dim" };
 
 function attr(tag: string, name: string): string | undefined {
   const m = tag.match(new RegExp(`${name}=(?:"([^"]*)"|'([^']*)'|\\{"([^"]*)"\\})`));
@@ -120,7 +120,7 @@ export function markdownToLines(md: string): TermLine[] {
       blank();
       const { text, links } = inline(heading[2]);
       out.push({ text, tone: "bold" }, ...linkLines(links));
-      if (heading[1].length <= 2) out.push({ text: "─".repeat(Math.min(48, Math.max(8, text.length))), tone: "dim" });
+      if (heading[1].length <= 2) out.push({ text: "─".repeat(Math.min(40, Math.max(8, text.length))), tone: "accent" });
       continue;
     }
     if (/^(-{3,}|\*{3,}|_{3,})$/.test(line)) {
