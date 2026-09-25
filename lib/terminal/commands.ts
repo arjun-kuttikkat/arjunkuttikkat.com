@@ -10,7 +10,7 @@ import {
   edgazeTimeline,
 } from "../edgaze";
 import { aboutClosingLine, aboutParagraphs } from "../about-content";
-import { getProjectsHomeOrder, projectStateLabel, projects } from "../projects";
+import { projectStateLabel, projects } from "../projects";
 import { contactEmail, siteUrl } from "../site";
 import { stackTechnologyNames } from "../technologies";
 import { buildFs, columns, findFile, HOME, resolvePath, type FsDir } from "./fs";
@@ -55,6 +55,22 @@ const page = (heading: string, lines: TermLine[], extra: Partial<CommandResult> 
   ],
   ...(extra.effects ? { effects: extra.effects } : {}),
 });
+/** Directories that have a page twin; `cd` into one prints it. */
+const DIR_COMMANDS: Record<string, string> = {
+  [`${HOME}/projects`]: "projects",
+  [`${HOME}/blogs`]: "blogs",
+  [HOME]: "home",
+};
+
+/** The same short pointers everywhere a visitor might wonder what to do next. */
+const NUDGES: TermLine[] = [
+  { label: "  cd projects   ", text: "browse the projects", tone: "default" },
+  { label: "  cd blogs      ", text: "read a post here", tone: "default" },
+  { label: "  about         ", text: "who is behind this", tone: "default" },
+  { label: "  newsletter    ", text: "subscribe from the terminal", tone: "default" },
+  { text: "  help for everything else · exit to go back", tone: "dim" },
+];
+
 const rule = (label?: string): TermLine => ({
   text: label ? `── ${label} ${"─".repeat(Math.max(4, 36 - label.length))}` : "─".repeat(40),
   tone: "dim",
@@ -264,43 +280,14 @@ const commands: Command[] = [
     name: "home",
     aliases: ["index", "start"],
     usage: "home",
-    description: "The home page, as a terminal",
-    run: (_a, env) => {
-      const featured = getProjectsHomeOrder().slice(0, 4);
-      const latest = env.posts.slice(0, 3);
-      return out([
+    description: "Where to go from here",
+    run: (_a, env) =>
+      out([
         { text: "Arjun Kuttikkat", tone: "bold" },
-        "Founder of Edgaze. Robotics and AI student at University of Birmingham Dubai.",
-        "Building a marketplace and hosted runtime where AI workflows are built, published, and run per use.",
+        { text: `Founder of Edgaze · ${projects.length} projects · ${env.posts.length} posts`, tone: "dim" },
         "",
-        rule("Now"),
-        `Edgaze is ${edgazeState.label.toLowerCase()} (since ${edgazeState.since}) · ${edgazeState.company}`,
-        `${edgazeMonitoredServices.length} services monitored on ${edgazeLinks.status.replace("https://", "")}. Target: 100k GMV before the end of 2026.`,
-        "",
-        rule("Projects"),
-        ...featured.map((p) => ({
-          label: `  ${p.name.padEnd(20)}`,
-          text: `${projectStateLabel[p.state].toLowerCase().padEnd(16)}${p.tagline}`,
-          href: `/projects/${p.slug}`,
-        })),
-        { text: "  projects for the full list · project <slug> for one", tone: "dim" },
-        "",
-        rule("Writing"),
-        ...(latest.length
-          ? latest.map((p) => ({
-              text: `  ${p.date.padEnd(12)}${p.title}  · ${p.readTimeMinutes} min`,
-              href: `/blogs/${p.slug}`,
-            }))
-          : [{ text: "  No published posts yet.", tone: "dim" as const }]),
-        { text: "  blogs for every post · read <slug> to read one here", tone: "dim" },
-        "",
-        rule("Reach"),
-        ...socialLinks.map((s) => ({ label: `  ${s.label.padEnd(10)}`, text: s.href, href: s.href })),
-        { label: `  ${"Email".padEnd(10)}`, text: contactEmail, href: `mailto:${contactEmail}` },
-        "",
-        { text: "about · newsletter · edgaze · help", tone: "dim" },
-      ]);
-    },
+        ...NUDGES,
+      ]),
   },
   {
     name: "about",
@@ -648,7 +635,14 @@ const commands: Command[] = [
       const paths = args.filter((a) => !a.startsWith("-"));
       const target = resolvePath(env.cwd, paths[0]);
       const dir = fs[target];
-      if (dir) return out(listDir(dir, long));
+      if (dir)
+        return out([
+          ...listDir(dir, long),
+          "",
+          target === HOME
+            ? { text: "cd projects · cd blogs · cat about.txt", tone: "dim" as const }
+            : { text: `${DIR_COMMANDS[target]} to pick one · cat <file> to read it`, tone: "dim" as const },
+        ]);
       const file = findFile(fs, env.cwd, paths[0] ?? "");
       if (file) return out([file.name]);
       return err(`ls: ${paths[0]}: No such file or directory`);
@@ -658,7 +652,7 @@ const commands: Command[] = [
   {
     name: "cd",
     usage: "cd [dir]",
-    description: "Change directory",
+    description: "Change directory (and open it: projects, blogs)",
     run: (args, env, fs) => {
       const target = resolvePath(env.cwd, args[0] ?? HOME);
       if (!fs[target]) {
@@ -666,7 +660,14 @@ const commands: Command[] = [
           ? err(`cd: not a directory: ${args[0]}`)
           : err(`cd: no such file or directory: ${args[0]}`);
       }
-      return { blocks: [], effects: [{ type: "cwd", cwd: target }] };
+      const cwd: CommandResult["effects"] = [{ type: "cwd", cwd: target }];
+      // Entering a directory shows its page, the way the web route would.
+      const twin = DIR_COMMANDS[target];
+      if (twin && target !== env.cwd) {
+        const res = find(twin)!.run([], { ...env, cwd: target }, fs);
+        return { blocks: res.blocks, effects: [...cwd, ...(res.effects ?? [])] };
+      }
+      return { blocks: [], effects: cwd };
     },
     complete: (p, env, fs) => completePath(p, env, fs).filter((s) => s.endsWith("/")),
   },
@@ -1037,7 +1038,7 @@ export function bootBlocks(context: TermEnv["context"], entry?: TermEntry): Term
     {
       id: "boot-hint",
       kind: "system",
-      text: "Type 'help' to see available commands. Tab completes.",
+      text: "cd projects · cd blogs · about · newsletter — or 'help'. Tab completes.",
     },
     ...(context === "route"
       ? [
