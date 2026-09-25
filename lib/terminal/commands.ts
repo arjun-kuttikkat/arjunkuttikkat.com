@@ -56,7 +56,7 @@ const page = (heading: string, lines: TermLine[], extra: Partial<CommandResult> 
   ...(extra.effects ? { effects: extra.effects } : {}),
 });
 const rule = (label?: string): TermLine => ({
-  text: label ? `── ${label} ${"─".repeat(Math.max(4, 44 - label.length))}` : "─".repeat(48),
+  text: label ? `── ${label} ${"─".repeat(Math.max(4, 36 - label.length))}` : "─".repeat(40),
   tone: "dim",
 });
 
@@ -184,8 +184,11 @@ function listDir(dir: FsDir, long: boolean): TermLine[] {
   return [
     `total ${entries.length}`,
     ...entries.map(
-      (e) =>
-        `${e.dir ? "drwxr-xr-x" : "-rw-r--r--"}  1 ${TERMINAL_USER}  staff   ${date}  ${e.name}`
+      (e): TermLine => ({
+        label: `${e.dir ? "drwxr-xr-x" : "-rw-r--r--"}  1 ${TERMINAL_USER}  staff   ${date}  `,
+        text: e.name,
+        tone: e.dir ? "accent" : "default",
+      })
     ),
   ];
 }
@@ -276,7 +279,8 @@ const commands: Command[] = [
         "",
         rule("Projects"),
         ...featured.map((p) => ({
-          text: `  ${p.slug.padEnd(20)}${projectStateLabel[p.state].toLowerCase().padEnd(16)}${p.tagline}`,
+          label: `  ${p.name.padEnd(20)}`,
+          text: `${projectStateLabel[p.state].toLowerCase().padEnd(16)}${p.tagline}`,
           href: `/projects/${p.slug}`,
         })),
         { text: "  projects for the full list · project <slug> for one", tone: "dim" },
@@ -291,8 +295,8 @@ const commands: Command[] = [
         { text: "  blogs for every post · read <slug> to read one here", tone: "dim" },
         "",
         rule("Reach"),
-        ...socialLinks.map((s) => ({ text: `  ${s.label.padEnd(10)}${s.href}`, href: s.href })),
-        { text: `  ${"Email".padEnd(10)}${contactEmail}`, href: `mailto:${contactEmail}` },
+        ...socialLinks.map((s) => ({ label: `  ${s.label.padEnd(10)}`, text: s.href, href: s.href })),
+        { label: `  ${"Email".padEnd(10)}`, text: contactEmail, href: `mailto:${contactEmail}` },
         "",
         { text: "about · newsletter · edgaze · help", tone: "dim" },
       ]);
@@ -348,22 +352,21 @@ const commands: Command[] = [
     description: "Every project record",
     run: () => {
       const sorted = [...projects].sort((a, b) => a.order - b.order);
-      const w = Math.max(...sorted.map((p) => p.slug.length)) + 3;
-      return page("Projects", [
-        { text: `${sorted.length} projects · newest first`, tone: "dim" },
-        "",
-        ...sorted.flatMap((p) => [
+      return page("Projects", [{ text: `${sorted.length} projects · pick one`, tone: "dim" }], {
+        blocks: [
           {
-            text: `  ${p.slug.padEnd(w)}${projectStateLabel[p.state].toLowerCase()}`,
-            href: `/projects/${p.slug}`,
+            id: id("menu"),
+            kind: "menu",
+            selected: 0,
+            filter: "",
+            items: sorted.map((p) => ({
+              label: p.name,
+              hint: projectStateLabel[p.state].toLowerCase(),
+              command: `project ${p.slug}`,
+            })),
           },
-          { text: `    ${p.tagline}`, tone: "dim" as const },
-          "",
-        ]),
-        "",
-        rule(),
-        { text: "project <slug> for the full record · open <slug> for the web page", tone: "dim" },
-      ]);
+        ],
+      });
     },
   },
   {
@@ -375,7 +378,7 @@ const commands: Command[] = [
       const slug = args[0].replace(/\.md$/, "").toLowerCase();
       const p = projects.find((x) => x.slug === slug);
       if (!p) return err(`project: '${args[0]}' not found. Run 'projects' to list slugs.`);
-      const fact = (k: string, v: string) => `  ${k.padEnd(10)}${v}`;
+      const fact = (k: string, v: string): TermLine => ({ label: `  ${k.padEnd(10)}`, text: v });
       const primary = p.links.find((l) => l.kind === "primary");
       return page(p.name, [
         { text: p.tagline, tone: "dim" },
@@ -403,8 +406,8 @@ const commands: Command[] = [
           "",
         ]),
         rule("Links"),
-        ...p.links.map((l) => ({ text: `  ${l.label.padEnd(20)}${l.href}`, href: l.href })),
-        { text: `  ${"Project page".padEnd(20)}/projects/${p.slug}`, href: `/projects/${p.slug}` },
+        ...p.links.map((l) => ({ label: `  ${l.label.padEnd(20)}`, text: l.href, href: l.href })),
+        { label: `  ${"Project page".padEnd(20)}`, text: `/projects/${p.slug}`, href: `/projects/${p.slug}` },
         "",
         {
           text: `open ${p.slug} for the web page${primary ? ` · open ${primary.href} for the product` : ""} · projects for the rest`,
@@ -422,19 +425,21 @@ const commands: Command[] = [
     run: (_a, env) => {
       if (env.posts.length === 0)
         return page("Blogs", [{ text: "No published posts yet.", tone: "dim" }]);
-      return page("Blogs", [
-        { text: `${env.posts.length} posts · newest first`, tone: "dim" },
-        "",
-        ...env.posts.flatMap((p) => [
-          { text: `  ${p.title}`, href: `/blogs/${p.slug}` },
-          { text: `    ${p.date} · ${p.readTimeMinutes} min read`, tone: "dim" as const },
-          { text: `    ${p.description}`, tone: "dim" as const },
-          { text: `    read ${p.slug}`, tone: "accent" as const },
-          "",
-        ]),
-        rule(),
-        { text: "read <slug> to read a post here · blog <slug> for the summary · open blogs for the index", tone: "dim" },
-      ]);
+      return page("Blogs", [{ text: `${env.posts.length} posts · newest first · pick one to read it here`, tone: "dim" }], {
+        blocks: [
+          {
+            id: id("menu"),
+            kind: "menu",
+            selected: 0,
+            filter: "",
+            items: env.posts.map((p) => ({
+              label: p.title,
+              hint: `${p.date} · ${p.readTimeMinutes} min`,
+              command: `read ${p.slug}`,
+            })),
+          },
+        ],
+      });
     },
   },
   {
