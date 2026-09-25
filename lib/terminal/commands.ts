@@ -13,7 +13,8 @@ import { aboutClosingLine, aboutParagraphs } from "../about-content";
 import { projectStateLabel, projects } from "../projects";
 import { contactEmail, siteUrl } from "../site";
 import { stackTechnologyNames } from "../technologies";
-import { buildFs, columns, findFile, HOME, resolvePath, type FsDir } from "./fs";
+import { figlet } from "./figlet";
+import { buildFs, columns, findDir, findFile, HOME, resolvePath, type FsDir } from "./fs";
 import {
   TERMINAL_HOST,
   TERMINAL_USER,
@@ -61,6 +62,39 @@ const DIR_COMMANDS: Record<string, string> = {
   [`${HOME}/blogs`]: "blogs",
   [HOME]: "home",
 };
+
+/**
+ * `cd`: forgiving resolution (cwd, then ~), `-` for the previous directory, and
+ * entering a directory prints its page the way the web route would.
+ */
+function enterDir(input: string | undefined, env: TermEnv, fs: Record<string, FsDir>): CommandResult {
+  const raw = input === "-" ? (env.prevCwd ?? HOME) : (input ?? HOME);
+  const target = findDir(fs, env.cwd, raw);
+  if (!target) {
+    return findFile(fs, env.cwd, raw)
+      ? err(`cd: not a directory: ${raw}`)
+      : err(`cd: no such file or directory: ${raw}\n    directories: ${fs[HOME].dirs.join(", ")} (cd works from anywhere)`);
+  }
+  const effects: CommandResult["effects"] = [{ type: "cwd", cwd: target }];
+  const twin = DIR_COMMANDS[target];
+  if (!twin) return { blocks: [], effects };
+  const res = find(twin)!.run([], { ...env, cwd: target }, fs);
+  return { blocks: res.blocks, effects: [...effects, ...(res.effects ?? [])] };
+}
+
+/**
+ * zsh AUTO_CD and then some: a bare directory name changes into it, a project
+ * or post slug opens it, a file name prints it. Used when no command matches.
+ */
+function autoJump(name: string, env: TermEnv, fs: Record<string, FsDir>): CommandResult | undefined {
+  const key = name.toLowerCase().replace(/\/$/, "");
+  if (findDir(fs, env.cwd, key)) return enterDir(key, env, fs);
+  if (projects.some((p) => p.slug === key)) return find("project")!.run([key], env, fs);
+  if (env.posts.some((p) => p.slug === key)) return find("read")!.run([key], env, fs);
+  const file = findFile(fs, env.cwd, name);
+  if (file) return out(file.lines());
+  return undefined;
+}
 
 /** The same short pointers everywhere a visitor might wonder what to do next. */
 const NUDGES: TermLine[] = [
@@ -186,10 +220,10 @@ function formatUptime(ms: number): string {
   return `${sec} secs`;
 }
 
-function listDir(dir: FsDir, long: boolean): TermLine[] {
+function listDir(dir: FsDir, long: boolean, all = false): TermLine[] {
   const entries = [
     ...dir.dirs.map((d) => ({ name: `${d}/`, dir: true })),
-    ...dir.files.map((f) => ({ name: f.name, dir: false })),
+    ...dir.files.filter((f) => all || !f.hidden).map((f) => ({ name: f.name, dir: false })),
   ];
   if (!long)
     return columns(
@@ -252,12 +286,17 @@ const commands: Command[] = [
           "hostname",
           "uname",
           "neofetch",
+          "figlet",
           "version",
           "banner",
           "exit",
         ]),
         {
           text: "Tab completes commands and paths. ↑ ↓ walk history. Ctrl+L clears, Ctrl+C cancels.",
+          tone: "dim",
+        },
+        {
+          text: "Shortcuts: a directory or slug on its own jumps to it (edgaze, blogs, compass). cd works from anywhere.",
           tone: "dim",
         },
       ]);
@@ -631,13 +670,15 @@ const commands: Command[] = [
     usage: "ls [-l] [path]",
     description: "List directory contents",
     run: (args, env, fs) => {
-      const long = args.some((a) => a.startsWith("-") && a.includes("l"));
+      const flags = args.filter((a) => a.startsWith("-")).join("");
+      const long = flags.includes("l");
+      const all = flags.includes("a");
       const paths = args.filter((a) => !a.startsWith("-"));
-      const target = resolvePath(env.cwd, paths[0]);
-      const dir = fs[target];
-      if (dir)
+      const target = findDir(fs, env.cwd, paths[0]);
+      const dir = target ? fs[target] : undefined;
+      if (dir && target)
         return out([
-          ...listDir(dir, long),
+          ...listDir(dir, long, all),
           "",
           target === HOME
             ? { text: "cd projects · cd blogs · cat about.txt", tone: "dim" as const }
@@ -652,24 +693,14 @@ const commands: Command[] = [
   {
     name: "cd",
     usage: "cd [dir]",
-    description: "Change directory (and open it: projects, blogs)",
-    run: (args, env, fs) => {
-      const target = resolvePath(env.cwd, args[0] ?? HOME);
-      if (!fs[target]) {
-        return findFile(fs, env.cwd, args[0] ?? "")
-          ? err(`cd: not a directory: ${args[0]}`)
-          : err(`cd: no such file or directory: ${args[0]}`);
-      }
-      const cwd: CommandResult["effects"] = [{ type: "cwd", cwd: target }];
-      // Entering a directory shows its page, the way the web route would.
-      const twin = DIR_COMMANDS[target];
-      if (twin && target !== env.cwd) {
-        const res = find(twin)!.run([], { ...env, cwd: target }, fs);
-        return { blocks: res.blocks, effects: [...cwd, ...(res.effects ?? [])] };
-      }
-      return { blocks: [], effects: cwd };
+    description: "Change directory and open it (projects, blogs, ~, -)",
+    run: (args, env, fs) => enterDir(args[0], env, fs),
+    complete: (p, env, fs) => {
+      const here = completePath(p, env, fs).filter((s) => s.endsWith("/"));
+      // From inside a directory, sibling directories still complete (`cd pro<Tab>` in ~/blogs).
+      const top = fs[HOME].dirs.filter((d) => d.startsWith(p) && !p.includes("/")).map((d) => `${d}/`);
+      return [...new Set([...here, ...top])];
     },
-    complete: (p, env, fs) => completePath(p, env, fs).filter((s) => s.endsWith("/")),
   },
   {
     name: "pwd",
@@ -850,6 +881,19 @@ const commands: Command[] = [
     run: () => ({ blocks: [{ id: id("banner"), kind: "banner" }] }),
   },
   {
+    name: "figlet",
+    aliases: ["big"],
+    usage: "figlet <text>",
+    description: "Print text in the banner's block font",
+    run: (args) => {
+      const text = args.join(" ").replace(/^(["'])(.*)\1$/, "$2").trim();
+      if (!text) return err("usage: figlet <text>");
+      if (!figlet(text).some((r) => r.trim()))
+        return err("figlet: nothing printable (letters, digits, - and . only)");
+      return { blocks: [{ id: id("fig"), kind: "figlet", text: text.slice(0, 24) }] };
+    },
+  },
+  {
     name: "exit",
     aliases: ["quit", "logout", ":q"],
     usage: "exit",
@@ -960,6 +1004,122 @@ const commands: Command[] = [
     description: "",
     run: () => out(["Hello. Type 'help' to see what this terminal can do."]),
   },
+  {
+    name: "fortune",
+    hidden: true,
+    usage: "fortune",
+    description: "",
+    run: (_a, env) => {
+      const pick = FORTUNES[Math.floor((Date.now() / 1000 + env.history.length) % FORTUNES.length)];
+      return out([pick, { text: "— from the posts and the .plan. Run it again.", tone: "dim" }]);
+    },
+  },
+  {
+    name: "cowsay",
+    aliases: ["moo"],
+    hidden: true,
+    usage: "cowsay <text>",
+    description: "",
+    run: (args) => {
+      const text = (args.join(" ").replace(/^(["'])(.*)\1$/, "$2") || "Ship the thing.").slice(0, 60);
+      const bar = "-".repeat(text.length + 2);
+      return out([
+        ` ${bar}`,
+        `< ${text} >`,
+        ` ${bar}`,
+        "        \\   ^__^",
+        "         \\  (oo)\\_______",
+        "            (__)\\       )\\/\\",
+        "                ||----w |",
+        "                ||     ||",
+      ]);
+    },
+  },
+  {
+    name: "sl",
+    hidden: true,
+    usage: "sl",
+    description: "",
+    run: () =>
+      out([
+        { text: "You typed sl. That is ls backwards. Here is your train.", tone: "dim" },
+        "      ====        ________                ___________",
+        "  _D _|  |_______/        \\__I_I_____===__|_________|",
+        "   |(_)---  |   H\\________/ |   |        =|___ ___|",
+        "   /     |  |   H  |  |     |   |         ||_| |_||",
+        "  |      |  |   H  |__--------------------| [___] |",
+        "  | ________|___H__/__|_____/[][]~\\_______|       |",
+        "  |/ |   |-----------I_____I [][] []  D   |=======|__",
+        "__/ =| o |=-~~\\  /~~\\  /~~\\  /~~\\ ____Y___________|__",
+        " |/-=|___|=    ||    ||    ||    |_____/~\\___/",
+        "  \\_/      \\O=====O=====O=====O_/      \\_/",
+      ]),
+  },
+  {
+    name: "yes",
+    hidden: true,
+    usage: "yes",
+    description: "",
+    run: (args) => out([...Array(8).fill(args[0] ?? "y"), { text: "^C  (ok, that is enough)", tone: "dim" }]),
+  },
+  {
+    name: "finger",
+    hidden: true,
+    usage: "finger",
+    description: "",
+    run: (_a, _e, fs) =>
+      out([
+        `Login: arjun               Name: Arjun Kuttikkat`,
+        `Directory: /Users/arjun    Shell: /bin/zsh`,
+        `Office: Dubai              Company: ${edgazeState.company}`,
+        "Plan:",
+        ...findFile(fs, HOME, ".plan")!.lines().slice(2),
+      ]),
+  },
+  {
+    name: "coffee",
+    aliases: ["brew"],
+    hidden: true,
+    usage: "coffee",
+    description: "",
+    run: () =>
+      out([
+        "      ( (",
+        "       ) )",
+        "    ........",
+        "    |      |]",
+        "    \\      /",
+        "     `----'",
+        { text: "418 I'm a teapot. Most of this site was built on the stuff anyway.", tone: "dim" },
+      ]),
+  },
+  {
+    name: "zuck",
+    aliases: ["zuckerberg", "meta"],
+    hidden: true,
+    usage: "zuck",
+    description: "",
+    run: (_a, env) => {
+      const post = env.posts.find((p) => /stupid/i.test(p.title));
+      return out([
+        "Seventy-seven billion dollars and a low-resolution Eiffel Tower.",
+        ...(post
+          ? [{ text: `read ${post.slug}   — there is a whole post about it`, tone: "accent" as const }]
+          : []),
+      ]);
+    },
+  },
+];
+
+const FORTUNES = [
+  "Effort does not compensate for direction. You can execute well and still end up nowhere.",
+  "Until money flows, none of this is real.",
+  "A workflow that is not discoverable might as well not exist.",
+  "Persistence does not turn a bad thesis into a good one.",
+  "Starting something when nobody knows who you are feels terrifying, but reputationally it is cheap.",
+  "Ship the thing. Talk to the people using it. Fix what they hit. Repeat.",
+  "Interest is the easy part. The work is turning it into repeated usage.",
+  "You do not wait until everything is perfect. You build, you break, you fix, and you keep going.",
 ];
 
 const dummyEnv: TermEnv = {
@@ -972,6 +1132,11 @@ const dummyEnv: TermEnv = {
 
 function find(name: string): Command | undefined {
   return commands.find((c) => c.name === name || c.aliases?.includes(name));
+}
+
+/** True when `name` is a command or alias (pickers use this to tell a command from a filter). */
+export function isCommand(name: string): boolean {
+  return find(name.toLowerCase()) !== undefined;
 }
 
 function completePath(
@@ -1000,9 +1165,32 @@ export function execute(raw: string, env: TermEnv): CommandResult {
   const tokens = tokenize(raw);
   if (tokens.length === 0) return nothing();
   const [name, ...args] = tokens;
+  const fs = buildFs(env.posts);
   const cmd = find(name);
-  if (!cmd) return err(`zsh: command not found: ${name}`);
-  return cmd.run(args, env, buildFs(env.posts));
+  if (cmd) return cmd.run(args, env, fs);
+  const jump = args.length === 0 ? autoJump(name, env, fs) : undefined;
+  if (jump) return jump;
+  const close = suggest(name);
+  return err(
+    `zsh: command not found: ${name}${close ? `\n    did you mean '${close}'?` : "\n    try: cd projects · cd blogs · about · help"}`
+  );
+}
+
+/** Nearest visible command by edit distance, for "did you mean". */
+function suggest(name: string): string | undefined {
+  const dist = (a: string, b: string) => {
+    const m = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)] as number[]);
+    for (let j = 1; j <= b.length; j++) m[0][j] = j;
+    for (let i = 1; i <= a.length; i++)
+      for (let j = 1; j <= b.length; j++)
+        m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return m[a.length][b.length];
+  };
+  const best = commands
+    .filter((c) => !c.hidden)
+    .map((c) => ({ name: c.name, d: dist(name.toLowerCase(), c.name) }))
+    .sort((a, b) => a.d - b.d)[0];
+  return best && best.d <= Math.max(1, Math.floor(name.length / 3)) ? best.name : undefined;
 }
 
 /** Tab completion. Returns the candidates for the last token of `raw`. */
