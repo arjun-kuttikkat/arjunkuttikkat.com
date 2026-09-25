@@ -50,7 +50,7 @@ export function BlogTocMobilePanel({ items }: { items: TocItem[] }) {
   if (!items.length) return null;
 
   return (
-    <details className="mb-10 rounded-xl border border-white/10 bg-[#08080a]/90 lg:hidden">
+    <details className="mb-10 rounded-xl border border-white/10 bg-[#08080a]/90 xl:hidden">
       <summary className="cursor-pointer list-none px-4 py-3 text-[0.72rem] font-semibold tracking-[0.06em] text-zinc-300 outline-none transition-colors hover:text-white [&::-webkit-details-marker]:hidden">
         <span className="flex items-center justify-between gap-3">
           On this page
@@ -78,8 +78,8 @@ export function BlogTocDesktopPanel({ items }: { items: TocItem[] }) {
   if (!items.length) return null;
 
   return (
-    <aside className="relative hidden min-w-0 lg:block">
-      <div className="sticky top-28">
+    <aside className="absolute inset-y-0 left-full hidden xl:block">
+      <div className="sticky top-32 ml-10 w-48">
         <nav aria-label="On this page" className="text-sm">
           <p className="mb-3 text-[0.65rem] font-semibold tracking-[0.08em] text-zinc-500">
             On this page
