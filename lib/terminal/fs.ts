@@ -16,6 +16,8 @@ export type FsFile = {
   href?: string;
   /** External URL, when the file is really a link. */
   external?: string;
+  /** Dotfiles: listed only by `ls -a`, but `cat` finds them. */
+  hidden?: boolean;
   lines: () => TermLine[];
 };
 
@@ -163,6 +165,34 @@ export function buildFs(posts: TermPost[]): Record<string, FsDir> {
         ],
       },
       {
+        name: ".plan",
+        hidden: true,
+        lines: () => [
+          { text: "# .plan", tone: "bold" },
+          "",
+          "Ship the thing. Talk to the people using it. Fix what they hit. Repeat.",
+          "",
+          "Before end of 2026: real, repeated usage on Edgaze and 100k in GMV.",
+          "Everything else is a detail.",
+          "",
+          { text: "You found the dotfile. Try 'fortune', 'figlet hello', or 'cowsay'.", tone: "dim" },
+        ],
+      },
+      {
+        name: ".zshrc",
+        hidden: true,
+        lines: () => [
+          { text: "# ~/.zshrc", tone: "dim" },
+          'export EDITOR="none, it is read-only here"',
+          "alias pj=projects",
+          "alias posts=blogs",
+          "alias who=whois",
+          'PROMPT="%F{green}%n@%m%f %F{blue}%~%f %% "',
+          "",
+          { text: "setopt AUTO_CD   # type a directory or slug to jump to it", tone: "dim" },
+        ],
+      },
+      {
         name: "stack.txt",
         lines: () => {
           const all = [
@@ -247,16 +277,44 @@ export function splitPath(path: string): { dir: string; file: string } {
   return { dir: path.slice(0, i) || HOME, file: path.slice(i + 1) };
 }
 
-export function findFile(
+/**
+ * Resolve a directory the forgiving way: relative to cwd first, then from ~
+ * (like zsh's cdpath), so `cd projects` works from inside ~/blogs.
+ */
+export function findDir(
   fs: Record<string, FsDir>,
   cwd: string,
-  input: string
-): FsFile | undefined {
-  const full = resolvePath(cwd, input);
+  input: string | undefined
+): string | undefined {
+  const rel = resolvePath(cwd, input);
+  if (fs[rel]) return rel;
+  const fromHome = resolvePath(HOME, input);
+  return fs[fromHome] ? fromHome : undefined;
+}
+
+function findFileIn(fs: Record<string, FsDir>, full: string): FsFile | undefined {
   const { dir, file } = splitPath(full);
   const d = fs[dir];
   if (!d) return undefined;
   return d.files.find(
     (f) => f.name === file || f.name === `${file}.md` || f.name === `${file}.txt`
   );
+}
+
+/** Files resolve relative to cwd, then from ~, then anywhere by bare name (`cat edgaze` works from any directory). */
+export function findFile(
+  fs: Record<string, FsDir>,
+  cwd: string,
+  input: string
+): FsFile | undefined {
+  if (!input) return undefined;
+  const direct = findFileIn(fs, resolvePath(cwd, input)) ?? findFileIn(fs, resolvePath(HOME, input));
+  if (direct || input.includes("/")) return direct;
+  for (const dir of Object.values(fs)) {
+    const hit = dir.files.find(
+      (f) => f.name === input || f.name === `${input}.md` || f.name === `${input}.txt`
+    );
+    if (hit) return hit;
+  }
+  return undefined;
 }
