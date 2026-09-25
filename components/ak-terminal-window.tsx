@@ -34,7 +34,17 @@ import { trackEvent } from "../lib/analytics";
 import { readLastWebPath } from "./mode-toggle";
 import { TrafficLights } from "./terminal/traffic-lights";
 
-type InputMode = "command" | "newsletter_email";
+type InputMode = "command" | "newsletter_email" | "menu";
+
+type MenuBlock = Extract<TermBlock, { kind: "menu" }>;
+
+/** Items still visible under the menu's filter, with their original indices. */
+function visibleMenuItems(menu: MenuBlock) {
+  const q = menu.filter.trim().toLowerCase();
+  return menu.items
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => !q || `${item.label} ${item.hint ?? ""}`.toLowerCase().includes(q));
+}
 
 const TERMINAL_FONT =
   'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
@@ -100,6 +110,17 @@ const FULL_BANNER = [
 const bannerClass = (compact?: boolean) =>
   `whitespace-pre font-semibold text-[#d6d6d6] ${compact ? "text-[11px] leading-[1.1]" : "text-[12px] leading-[1.1] sm:text-[14px]"}`;
 
+/** Gradient text for block letters: the banner stays near-white, page headings take the site accents. */
+const gradientText = (from: string, to: string): React.CSSProperties => ({
+  backgroundImage: `linear-gradient(135deg, ${from}, ${to})`,
+  WebkitBackgroundClip: "text",
+  backgroundClip: "text",
+  color: "transparent",
+  letterSpacing: "0.02em",
+});
+const BANNER_GRADIENT = gradientText("#f4f4f5", "#a5b4bd");
+const HEADING_GRADIENT = gradientText("#67e8f9", "#c084fc");
+
 /** True while the hidden probe's natural width fits inside the host. */
 function useFits(
   hostRef: React.RefObject<HTMLDivElement | null>,
@@ -134,11 +155,7 @@ function Banner({ variant, compact }: { variant: "ak" | "full"; compact?: boolea
 
   return (
     <div ref={hostRef} className="relative min-w-0">
-      <pre
-        className={bannerClass(compact)}
-        style={{ letterSpacing: "0.02em" }}
-        aria-hidden
-      >
+      <pre className={bannerClass(compact)} style={BANNER_GRADIENT} aria-hidden>
         {(measure && fits ? FULL_BANNER : AK_BANNER).join("\n")}
       </pre>
       {measure ? (
@@ -169,11 +186,13 @@ function Figlet({ text }: { text: string }) {
   return (
     <div ref={hostRef} className="relative min-w-0 py-1">
       {fits ? (
-        <pre className={bannerClass(true)} style={{ letterSpacing: "0.02em" }} aria-label={text}>
+        <pre className={bannerClass(true)} style={HEADING_GRADIENT} aria-label={text}>
           {rows.join("\n")}
         </pre>
       ) : (
-        <p className={`${TEXT} font-semibold uppercase tracking-[0.18em] text-[#f2f2f2]`}>{text}</p>
+        <p className={`${TEXT} font-semibold uppercase tracking-[0.18em]`} style={HEADING_GRADIENT}>
+          {text}
+        </p>
       )}
       <pre
         ref={probeRef}
@@ -189,9 +208,9 @@ function Figlet({ text }: { text: string }) {
 
 function Rule({ label }: { label?: string }) {
   return (
-    <div className="flex items-center gap-2 py-0.5 text-[#5f5f5f]" aria-hidden>
-      {label ? <span className={`${TEXT} shrink-0 text-[#8a8a8a]`}>── {label}</span> : null}
-      <span className="h-px flex-1 bg-[#3a3a3a]" />
+    <div className="flex items-center gap-2 py-0.5" aria-hidden>
+      {label ? <span className={`${TEXT} shrink-0 text-cyan-300/70`}>── {label}</span> : null}
+      <span className="h-px flex-1 bg-cyan-300/15" />
     </div>
   );
 }
@@ -206,14 +225,39 @@ const toneClass: Record<NonNullable<Exclude<TermLine, string>["tone"]>, string> 
   bold: "text-[#f2f2f2] font-semibold",
 };
 
+/** Labelled rules (`── Stack ───`) coming from the command engine as plain lines. */
+const RULE_LINE = /^── (.+?) ─+$/;
+
 function isExternal(href: string) {
   return /^(https?:|mailto:)/.test(href);
 }
 
+/** zsh-style prompt: green user@host, blue path, grey `%`. Other prompts (`Email:`) print as-is. */
+function Prompt({ text }: { text: string }) {
+  const m = text.match(/^(\S+@\S+) (\S+) %$/);
+  if (!m) return <span className="text-[#9a9a9a]">{text}</span>;
+  return (
+    <>
+      <span className="text-[#7ed491]">{m[1]}</span>
+      <span className="text-[#9a9a9a]"> </span>
+      <span className="text-[#7cb8ff]">{m[2]}</span>
+      <span className="text-[#9a9a9a]"> %</span>
+    </>
+  );
+}
+
 function OutLine({ line }: { line: TermLine }) {
   const l = typeof line === "string" ? { text: line } : line;
+  const rule = !l.href && !l.label && l.tone === "dim" ? l.text.match(RULE_LINE) : null;
+  if (rule) return <Rule label={rule[1]} />;
   const cls = `whitespace-pre-wrap break-words ${TEXT} ${toneClass[l.tone ?? "default"]}`;
-  if (!l.href) return <p className={cls}>{l.text || "\u00a0"}</p>;
+  const body = (
+    <>
+      {l.label ? <span className="text-[#8fd3f4]/80">{l.label}</span> : null}
+      {l.text || (l.label ? "" : "\u00a0")}
+    </>
+  );
+  if (!l.href) return <p className={cls}>{body}</p>;
   const linkCls = `${cls} block w-fit max-w-full underline decoration-white/25 decoration-dotted underline-offset-[3px] transition-colors hover:text-white hover:decoration-white/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/35`;
   return isExternal(l.href) ? (
     <a
@@ -222,17 +266,109 @@ function OutLine({ line }: { line: TermLine }) {
       rel="noopener noreferrer"
       className={linkCls}
     >
-      {l.text}
+      {body}
     </a>
   ) : (
     <Link href={l.href} className={linkCls}>
-      {l.text}
+      {body}
     </Link>
   );
 }
 
-function Block({ block, banner }: { block: TermBlock; banner: "ak" | "full" }) {
+type MenuHandlers = {
+  activeId: string | null;
+  onHover: (id: string, index: number) => void;
+  onChoose: (id: string, index: number) => void;
+};
+
+/**
+ * fzf-style picker. The cursor row is highlighted; on pointer devices a hover
+ * moves the cursor and a click chooses, so it works the same on a phone.
+ */
+function Menu({ block, handlers }: { block: MenuBlock; handlers: MenuHandlers }) {
+  const active = handlers.activeId === block.id && !block.done;
+  const visible = visibleMenuItems(block);
+  const width = Math.max(...block.items.map((i) => i.label.length)) + 2;
+  return (
+    <div className={`my-1 max-w-[100ch] ${block.done === "cancelled" ? "opacity-60" : ""}`}>
+      {block.filter ? (
+        <p className={`${TEXT} text-[#8a8a8a]`}>
+          <span className="text-cyan-300/80">/ </span>
+          {block.filter}
+          {active ? <span className="ml-px inline-block h-[1em] w-[0.55em] translate-y-[0.15em] bg-[#d0d0d0]" /> : null}
+        </p>
+      ) : null}
+      {visible.length === 0 ? (
+        <p className={`${TEXT} text-[#8a8a8a]`}>  no matches</p>
+      ) : (
+        <ul role="listbox" aria-label="Choose an item" aria-activedescendant={`${block.id}-${block.selected}`}>
+          {visible.map(({ item, index }) => {
+            const current = index === block.selected;
+            const chosen = block.done === "chosen" && current;
+            const muted = block.done === "chosen" && !current;
+            return (
+              <li key={index} id={`${block.id}-${index}`} role="option" aria-selected={current}>
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  disabled={!!block.done}
+                  onMouseEnter={() => active && handlers.onHover(block.id, index)}
+                  onClick={() => active && handlers.onChoose(block.id, index)}
+                  style={{ "--menu-col": `${width}ch` } as React.CSSProperties}
+                  className={[
+                    "flex w-full flex-wrap items-baseline rounded-[4px] px-1.5 py-[3px] text-left",
+                    "break-words",
+                    TEXT,
+                    current && active ? "bg-cyan-300/[0.09] text-white" : "",
+                    chosen ? "text-white" : "",
+                    muted ? "text-[#6f6f6f]" : "",
+                    !current && !block.done ? "text-[#c8c8c8]" : "",
+                    active ? "cursor-pointer" : "cursor-default",
+                  ].join(" ")}
+                >
+                  <span className={`w-[2ch] shrink-0 ${chosen ? "text-[#7ed491]" : "text-cyan-300"}`}>
+                    {current ? "❯" : " "}
+                  </span>
+                  <span className={`min-w-0 sm:min-w-(--menu-col) ${current && !muted ? "font-semibold" : ""}`}>
+                    {item.label}
+                  </span>
+                  {item.hint ? (
+                    <span className="basis-full pl-[2ch] text-[#8a8a8a] sm:basis-auto sm:pl-0">{item.hint}</span>
+                  ) : null}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <p className={`${TEXT} mt-1 text-[#6f6f6f]`}>
+        {block.done === "cancelled" ? (
+          "cancelled"
+        ) : block.done === "chosen" ? (
+          `${visible.length === block.items.length ? block.items.length : visible.length}/${block.items.length}`
+        ) : (
+          <>
+            <span className="[@media(hover:none)]:hidden">↑ ↓ move · ⏎ open · type to filter · esc cancel</span>
+            <span className="[@media(hover:hover)]:hidden">tap a row to open it</span>
+          </>
+        )}
+      </p>
+    </div>
+  );
+}
+
+function Block({
+  block,
+  banner,
+  menu,
+}: {
+  block: TermBlock;
+  banner: "ak" | "full";
+  menu: MenuHandlers;
+}) {
   switch (block.kind) {
+    case "menu":
+      return <Menu block={block} handlers={menu} />;
     case "banner":
       return (
         <div className="py-1">
@@ -244,7 +380,7 @@ function Block({ block, banner }: { block: TermBlock; banner: "ak" | "full" }) {
     case "cmd":
       return (
         <p className={`whitespace-pre-wrap break-words ${TEXT} text-[#ececec]`}>
-          <span className="text-[#9a9a9a]">{block.prompt} </span>
+          <Prompt text={block.prompt} />{" "}
           {block.text}
         </p>
       );
@@ -375,13 +511,14 @@ export function AKTerminalWindow({
   const [focused, setFocused] = useState(false);
   const [active, setActive] = useState(true);
   const [mode, setMode] = useState<InputMode>("command");
+  const [menuId, setMenuId] = useState<string | null>(null);
   const [cwd, setCwd] = useState(entry?.cwd ?? HOME);
   const [history, setHistory] = useState<string[]>([]);
   const [histPos, setHistPos] = useState<number | null>(null);
   const [size, setSize] = useState({ cols: 80, rows: 24 });
   const [startedAt, setStartedAt] = useState(0);
 
-  const prompt = mode === "command" ? promptFor(cwd) : "Email:";
+  const prompt = mode === "newsletter_email" ? "Email:" : promptFor(cwd);
 
   const env = useMemo<TermEnv>(
     () => ({ context, cwd, posts, history, startedAt }),
@@ -615,8 +752,80 @@ export function AKTerminalWindow({
         }
       }
       if (result.blocks.length) push(...result.blocks);
+      const menu = result.blocks.find((b): b is MenuBlock => b.kind === "menu");
+      if (menu) {
+        setMenuId(menu.id);
+        setMode("menu");
+      }
     },
     [context, cwd, env, history, leave, mode, push, readPost, router]
+  );
+
+  const updateMenu = useCallback((id: string, fn: (m: MenuBlock) => MenuBlock) => {
+    setBlocks((prev) => prev.map((b) => (b.id === id && b.kind === "menu" ? fn(b) : b)));
+  }, []);
+
+  const moveMenu = useCallback(
+    (id: string, delta: number) =>
+      updateMenu(id, (m) => {
+        const visible = visibleMenuItems(m);
+        if (!visible.length) return m;
+        const pos = Math.max(0, visible.findIndex((v) => v.index === m.selected));
+        const next = (pos + delta + visible.length) % visible.length;
+        return { ...m, selected: visible[next].index };
+      }),
+    [updateMenu]
+  );
+
+  const filterMenu = useCallback(
+    (id: string, filter: string) =>
+      updateMenu(id, (m) => {
+        const next = { ...m, filter };
+        const visible = visibleMenuItems(next);
+        const stillVisible = visible.some((v) => v.index === m.selected);
+        return { ...next, selected: stillVisible ? m.selected : (visible[0]?.index ?? m.selected) };
+      }),
+    [updateMenu]
+  );
+
+  const cancelMenu = useCallback(
+    (id: string) => {
+      updateMenu(id, (m) => ({ ...m, done: "cancelled" }));
+      setMenuId(null);
+      setMode("command");
+    },
+    [updateMenu]
+  );
+
+  const chooseMenu = useCallback(
+    (id: string, index: number) => {
+      let command: string | undefined;
+      setBlocks((prev) =>
+        prev.map((b) => {
+          if (b.id !== id || b.kind !== "menu" || b.done) return b;
+          command = b.items[index]?.command;
+          return { ...b, selected: index, done: "chosen" };
+        })
+      );
+      setMenuId(null);
+      setMode("command");
+      inputRef.current?.focus({ preventScroll: true });
+      // The block update above is applied before the timeout fires, so the command
+      // is committed against the frozen menu.
+      window.setTimeout(() => {
+        if (command) void commitRef.current(command, { anchor: true });
+      }, 0);
+    },
+    []
+  );
+
+  const menuHandlers = useMemo<MenuHandlers>(
+    () => ({
+      activeId: mode === "menu" ? menuId : null,
+      onHover: (id, index) => updateMenu(id, (m) => ({ ...m, selected: index })),
+      onChoose: chooseMenu,
+    }),
+    [chooseMenu, menuId, mode, updateMenu]
   );
 
   // Opened from a web page: run that page's command once, after the login line is in place.
@@ -634,6 +843,33 @@ export function AKTerminalWindow({
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const ctrl = e.ctrlKey && !e.metaKey && !e.altKey;
+
+    if (mode === "menu" && menuId) {
+      if (e.metaKey) return; // browser shortcuts (⌘R, ⌘L…) pass through
+      const menu = blocks.find((b): b is MenuBlock => b.id === menuId && b.kind === "menu");
+      if (!menu) {
+        setMode("command");
+        return;
+      }
+      e.preventDefault();
+      const filtering = menu.filter.length > 0;
+      if (e.key === "ArrowDown" || e.key === "Tab" || (ctrl && e.key === "n") || (!filtering && e.key === "j"))
+        return moveMenu(menuId, 1);
+      if (e.key === "ArrowUp" || (ctrl && e.key === "p") || (!filtering && e.key === "k"))
+        return moveMenu(menuId, -1);
+      if (e.key === "Enter") return chooseMenu(menuId, menu.selected);
+      if (e.key === "Escape" || (ctrl && (e.key === "c" || e.key === "C")) || (!filtering && e.key === "q"))
+        return cancelMenu(menuId);
+      if (ctrl && (e.key === "l" || e.key === "L")) {
+        setBlocks([]);
+        setMenuId(null);
+        setMode("command");
+        return;
+      }
+      if (e.key === "Backspace") return filterMenu(menuId, menu.filter.slice(0, -1));
+      if (e.key.length === 1 && !ctrl && !e.altKey) return filterMenu(menuId, menu.filter + e.key);
+      return;
+    }
 
     if (e.key === "Enter") {
       e.preventDefault();
@@ -696,6 +932,7 @@ export function AKTerminalWindow({
       push({ id: nextId("cmd"), kind: "cmd", prompt, text: `${input}^C` });
       setLine("");
       setMode("command");
+      setMenuId(null);
       setHistPos(null);
       pendingRef.current = false;
       return;
@@ -760,16 +997,15 @@ export function AKTerminalWindow({
         <div className="space-y-2">
           {blocks.map((b) => (
             <div key={b.id} data-block-id={b.id}>
-              <Block block={b} banner={context === "route" ? "full" : "ak"} />
+              <Block block={b} banner={context === "route" ? "full" : "ak"} menu={menuHandlers} />
             </div>
           ))}
 
-          <div className="relative flex min-w-0 flex-wrap items-baseline">
-            <span
-              className="shrink-0 select-none whitespace-pre text-[#9a9a9a]"
-              aria-hidden
-            >
-              {prompt}{" "}
+          <div
+            className={`relative flex min-w-0 flex-wrap items-baseline ${mode === "menu" ? "h-0 overflow-hidden opacity-0" : ""}`}
+          >
+            <span className="shrink-0 select-none whitespace-pre" aria-hidden>
+              <Prompt text={prompt} />{" "}
             </span>
             <span
               className="min-w-0 whitespace-pre-wrap break-all text-[#ececec]"
