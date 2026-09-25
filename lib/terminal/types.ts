@@ -1,4 +1,4 @@
-export const TERMINAL_VERSION = "1.1.0";
+export const TERMINAL_VERSION = "1.2.0";
 export const TERMINAL_USER = "visitor";
 export const TERMINAL_HOST = "arjunkuttikkat";
 
@@ -30,7 +30,13 @@ export type TermBlock =
   | { id: string; kind: "cmd"; prompt: string; text: string }
   | { id: string; kind: "out"; lines: TermLine[] }
   | { id: string; kind: "err"; text: string }
-  | { id: string; kind: "neofetch"; rows: Array<[string, string]> };
+  | { id: string; kind: "neofetch"; rows: Array<[string, string]> }
+  /** Block-letter heading; `text` is the plain fallback when the glyphs will not fit. */
+  | { id: string; kind: "figlet"; text: string }
+  /** Horizontal rule, optionally labelled: `── Stack ─────`. */
+  | { id: string; kind: "rule"; label?: string }
+  /** A full blog post fetched on the client and rendered from Markdown. */
+  | { id: string; kind: "article"; slug: string; status: "loading" | "ready" | "error"; lines: TermLine[] };
 
 export type TermEffect =
   | { type: "clear" }
@@ -38,6 +44,8 @@ export type TermEffect =
   | { type: "navigate"; href: string }
   | { type: "open"; href: string }
   | { type: "prompt_email" }
+  /** Fetch `/blogs/<slug>/md` and render it as an `article` block. */
+  | { type: "read_post"; slug: string }
   | { type: "exit" };
 
 export type TermEnv = {
@@ -51,4 +59,15 @@ export type TermEnv = {
 export type CommandResult = {
   blocks: TermBlock[];
   effects?: TermEffect[];
+};
+
+/**
+ * Where the terminal was opened from. The window starts in `cwd` and runs
+ * `command` as if the visitor had typed it, so every web page has a twin.
+ */
+export type TermEntry = {
+  /** Web path the visitor came from; `exit` returns here. */
+  path: string;
+  cwd: string;
+  command?: string;
 };
