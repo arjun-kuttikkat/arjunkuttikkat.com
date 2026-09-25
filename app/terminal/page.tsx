@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import { AKTerminalWindow } from "../../components/ak-terminal-window";
 import { ModeToggle } from "../../components/mode-toggle";
 import { JsonLd } from "../../components/seo/json-ld";
+import { TerminalRoute } from "../../components/terminal/terminal-route";
 import { buildBreadcrumb, homeCrumb } from "../../lib/seo/breadcrumbs";
 import type { Metadata } from "next";
 import { defaultOgImage, siteName, siteKeywords } from "../../lib/site";
@@ -48,13 +50,15 @@ export default function TerminalPage() {
             <ModeToggle />
           </div>
         </div>
-        <AKTerminalWindow
-          context="route"
-          posts={posts}
-          chrome={false}
-          autoFocus
-          className="flex-1"
-        />
+        {/* useSearchParams needs a boundary on a static route; the fallback is the same
+            window without an entry, so the prerendered HTML still shows a booted shell. */}
+        <Suspense
+          fallback={
+            <AKTerminalWindow context="route" posts={posts} chrome={false} className="flex-1" />
+          }
+        >
+          <TerminalRoute posts={posts} />
+        </Suspense>
       </main>
     </>
   );
