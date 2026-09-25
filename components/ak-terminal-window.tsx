@@ -15,6 +15,7 @@ import {
   complete,
   execute,
   HOME,
+  isCommand,
   lastLoginLine,
   promptFor,
   SUGGESTIONS,
@@ -299,7 +300,9 @@ function Menu({ block, handlers }: { block: MenuBlock; handlers: MenuHandlers })
         </p>
       ) : null}
       {visible.length === 0 ? (
-        <p className={`${TEXT} text-[#8a8a8a]`}>  no matches</p>
+        <p className={`${TEXT} text-[#8a8a8a]`}>
+          {"  "}no matches · <span className="text-cyan-300/80">⏎</span> runs &lsquo;{block.filter.trim()}&rsquo; as a command
+        </p>
       ) : (
         <ul role="listbox" aria-label="Choose an item" aria-activedescendant={`${block.id}-${block.selected}`}>
           {visible.map(({ item, index }) => {
@@ -348,7 +351,7 @@ function Menu({ block, handlers }: { block: MenuBlock; handlers: MenuHandlers })
           `${visible.length === block.items.length ? block.items.length : visible.length}/${block.items.length}`
         ) : (
           <>
-            <span className="[@media(hover:none)]:hidden">↑ ↓ move · ⏎ open · type to filter · esc cancel</span>
+            <span className="[@media(hover:none)]:hidden">↑ ↓ move · ⏎ open · type to filter or run a command · esc cancel</span>
             <span className="[@media(hover:hover)]:hidden">tap a row to open it</span>
           </>
         )}
@@ -513,6 +516,7 @@ export function AKTerminalWindow({
   const [mode, setMode] = useState<InputMode>("command");
   const [menuId, setMenuId] = useState<string | null>(null);
   const [cwd, setCwd] = useState(entry?.cwd ?? HOME);
+  const [prevCwd, setPrevCwd] = useState<string | undefined>(undefined);
   const [history, setHistory] = useState<string[]>([]);
   const [histPos, setHistPos] = useState<number | null>(null);
   const [size, setSize] = useState({ cols: 80, rows: 24 });
@@ -521,8 +525,8 @@ export function AKTerminalWindow({
   const prompt = mode === "newsletter_email" ? "Email:" : promptFor(cwd);
 
   const env = useMemo<TermEnv>(
-    () => ({ context, cwd, posts, history, startedAt }),
-    [context, cwd, posts, history, startedAt]
+    () => ({ context, cwd, prevCwd, posts, history, startedAt }),
+    [context, cwd, prevCwd, posts, history, startedAt]
   );
 
   // Window "activation" follows the pointer like macOS: click inside = active, click anywhere else = inactive.
@@ -729,7 +733,10 @@ export function AKTerminalWindow({
             setBlocks([]);
             return;
           case "cwd":
-            setCwd(effect.cwd);
+            if (effect.cwd !== cwd) {
+              setPrevCwd(cwd);
+              setCwd(effect.cwd);
+            }
             break;
           case "prompt_email":
             setMode("newsletter_email");
@@ -857,7 +864,19 @@ export function AKTerminalWindow({
         return moveMenu(menuId, 1);
       if (e.key === "ArrowUp" || (ctrl && e.key === "p") || (!filtering && e.key === "k"))
         return moveMenu(menuId, -1);
-      if (e.key === "Enter") return chooseMenu(menuId, menu.selected);
+      if (e.key === "Enter") {
+        // Typed something that is not one of the rows (`cd projects`, `help`)? Run it
+        // as a command instead of dead-ending on "no matches".
+        const typed = menu.filter.trim();
+        const asCommand =
+          typed && (visibleMenuItems(menu).length === 0 || isCommand(typed.split(/\s+/)[0]));
+        if (asCommand) {
+          cancelMenu(menuId);
+          window.setTimeout(() => void commitRef.current(typed), 0);
+          return;
+        }
+        return chooseMenu(menuId, menu.selected);
+      }
       if (e.key === "Escape" || (ctrl && (e.key === "c" || e.key === "C")) || (!filtering && e.key === "q"))
         return cancelMenu(menuId);
       if (ctrl && (e.key === "l" || e.key === "L")) {
