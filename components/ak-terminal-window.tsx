@@ -19,8 +19,11 @@ import {
   promptFor,
   SUGGESTIONS,
 } from "../lib/terminal/commands";
+import { figlet } from "../lib/terminal/figlet";
+import { articleLines } from "../lib/terminal/markdown";
 import type {
   TermBlock,
+  TermEntry,
   TermEnv,
   TermLine,
   TermPost,
@@ -28,6 +31,7 @@ import type {
 } from "../lib/terminal/types";
 import { TERMINAL_USER } from "../lib/terminal/types";
 import { trackEvent } from "../lib/analytics";
+import { readLastWebPath } from "./mode-toggle";
 import { TrafficLights } from "./terminal/traffic-lights";
 
 type InputMode = "command" | "newsletter_email";
@@ -96,19 +100,15 @@ const FULL_BANNER = [
 const bannerClass = (compact?: boolean) =>
   `whitespace-pre font-semibold text-[#d6d6d6] ${compact ? "text-[11px] leading-[1.1]" : "text-[12px] leading-[1.1] sm:text-[14px]"}`;
 
-/**
- * The AK monogram everywhere, except on the dedicated /terminal page where the
- * full name is printed when it fits on one line. Fit is measured with a hidden
- * copy so the decision follows real glyph width, not a column estimate.
- */
-function Banner({ variant, compact }: { variant: "ak" | "full"; compact?: boolean }) {
-  const hostRef = useRef<HTMLDivElement>(null);
-  const probeRef = useRef<HTMLPreElement>(null);
+/** True while the hidden probe's natural width fits inside the host. */
+function useFits(
+  hostRef: React.RefObject<HTMLDivElement | null>,
+  probeRef: React.RefObject<HTMLPreElement | null>,
+  enabled: boolean
+) {
   const [fits, setFits] = useState(false);
-  const measure = variant === "full" && !compact;
-
   useLayoutEffect(() => {
-    if (!measure) return;
+    if (!enabled) return;
     const host = hostRef.current;
     const probe = probeRef.current;
     if (!host || !probe) return;
@@ -117,7 +117,20 @@ function Banner({ variant, compact }: { variant: "ak" | "full"; compact?: boolea
     });
     ro.observe(host);
     return () => ro.disconnect();
-  }, [measure]);
+  }, [enabled, hostRef, probeRef]);
+  return fits;
+}
+
+/**
+ * The AK monogram everywhere, except on the dedicated /terminal page where the
+ * full name is printed when it fits on one line. Fit is measured with a hidden
+ * copy so the decision follows real glyph width, not a column estimate.
+ */
+function Banner({ variant, compact }: { variant: "ak" | "full"; compact?: boolean }) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const probeRef = useRef<HTMLPreElement>(null);
+  const measure = variant === "full" && !compact;
+  const fits = useFits(hostRef, probeRef, measure);
 
   return (
     <div ref={hostRef} className="relative min-w-0">
@@ -138,6 +151,47 @@ function Banner({ variant, compact }: { variant: "ak" | "full"; compact?: boolea
           {FULL_BANNER[0]}
         </pre>
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * A page heading in the banner's block font. When the glyph rows would wrap
+ * (narrow window, long name) it degrades to a plain bold heading instead.
+ */
+function Figlet({ text }: { text: string }) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const probeRef = useRef<HTMLPreElement>(null);
+  const rows = useMemo(() => figlet(text), [text]);
+  const widest = useMemo(() => rows.reduce((a, b) => (b.length > a.length ? b : a), ""), [rows]);
+  const fits = useFits(hostRef, probeRef, rows.some((r) => r.trim().length > 0));
+
+  return (
+    <div ref={hostRef} className="relative min-w-0 py-1">
+      {fits ? (
+        <pre className={bannerClass(true)} style={{ letterSpacing: "0.02em" }} aria-label={text}>
+          {rows.join("\n")}
+        </pre>
+      ) : (
+        <p className={`${TEXT} font-semibold uppercase tracking-[0.18em] text-[#f2f2f2]`}>{text}</p>
+      )}
+      <pre
+        ref={probeRef}
+        className={`pointer-events-none invisible absolute left-0 top-0 ${bannerClass(true)}`}
+        style={{ letterSpacing: "0.02em" }}
+        aria-hidden
+      >
+        {widest}
+      </pre>
+    </div>
+  );
+}
+
+function Rule({ label }: { label?: string }) {
+  return (
+    <div className="flex items-center gap-2 py-0.5 text-[#5f5f5f]" aria-hidden>
+      {label ? <span className={`${TEXT} shrink-0 text-[#8a8a8a]`}>── {label}</span> : null}
+      <span className="h-px flex-1 bg-[#3a3a3a]" />
     </div>
   );
 }
@@ -234,11 +288,31 @@ function Block({ block, banner }: { block: TermBlock; banner: "ak" | "full" }) {
       );
     case "out":
       return (
-        <div>
+        <div className="max-w-[100ch]">
           {block.lines.map((line, i) => (
             <OutLine key={`${block.id}-${i}`} line={line} />
           ))}
         </div>
+      );
+    case "figlet":
+      return <Figlet text={block.text} />;
+    case "rule":
+      return <Rule label={block.label} />;
+    case "article":
+      if (block.status === "loading")
+        return <p className={`${TEXT} text-[#8f8f8f]`}>Fetching ~/blogs/{block.slug}.md…</p>;
+      if (block.status === "error")
+        return (
+          <p className={`whitespace-pre-wrap ${TEXT} text-[#ff8a7a]`}>
+            read: could not load {block.slug}. Try &apos;open {block.slug}&apos; to read it on the web.
+          </p>
+        );
+      return (
+        <article className="max-w-[80ch]">
+          {block.lines.map((line, i) => (
+            <OutLine key={`${block.id}-${i}`} line={line} />
+          ))}
+        </article>
       );
   }
 }
@@ -270,6 +344,8 @@ export type AKTerminalWindowProps = {
   onFullscreen?: () => void;
   /** Focus the input as soon as the window mounts. */
   autoFocus?: boolean;
+  /** Web page this terminal mirrors: start in its directory and run its command. */
+  entry?: TermEntry;
 };
 
 export function AKTerminalWindow({
@@ -282,6 +358,7 @@ export function AKTerminalWindow({
   onMinimize,
   onFullscreen,
   autoFocus,
+  entry,
 }: AKTerminalWindowProps) {
   const router = useRouter();
   const windowRef = useRef<HTMLDivElement>(null);
@@ -290,14 +367,15 @@ export function AKTerminalWindow({
   const measureRef = useRef<HTMLSpanElement>(null);
   const pendingRef = useRef(false);
   const draftRef = useRef("");
+  const entryRanRef = useRef(false);
 
-  const [blocks, setBlocks] = useState<TermBlock[]>(() => bootBlocks(context));
+  const [blocks, setBlocks] = useState<TermBlock[]>(() => bootBlocks(context, entry));
   const [input, setInput] = useState("");
   const [caret, setCaret] = useState(0);
   const [focused, setFocused] = useState(false);
   const [active, setActive] = useState(true);
   const [mode, setMode] = useState<InputMode>("command");
-  const [cwd, setCwd] = useState(HOME);
+  const [cwd, setCwd] = useState(entry?.cwd ?? HOME);
   const [history, setHistory] = useState<string[]>([]);
   const [histPos, setHistPos] = useState<number | null>(null);
   const [size, setSize] = useState({ cols: 80, rows: 24 });
@@ -375,7 +453,22 @@ export function AKTerminalWindow({
     });
   }, []);
 
+  // Long page-style output (an article, a project record) is read from the top, so a
+  // block can ask to be scrolled into view instead of the prompt.
+  const scrollTargetRef = useRef<string | null>(null);
   useEffect(() => {
+    const target = scrollTargetRef.current;
+    if (target) {
+      scrollTargetRef.current = null;
+      const el = scrollRef.current;
+      const node = el?.querySelector<HTMLElement>(`[data-block-id="${target}"]`);
+      if (el && node) {
+        requestAnimationFrame(() => {
+          el.scrollTop = Math.max(0, node.offsetTop - el.offsetTop - 8);
+        });
+        return;
+      }
+    }
     scrollToBottom();
   }, [blocks, input, scrollToBottom]);
 
@@ -400,12 +493,33 @@ export function AKTerminalWindow({
   );
 
   const leave = useCallback(() => {
-    if (context === "route") router.push("/", { transitionTypes: ["to-web"] });
+    if (context === "route")
+      router.push(entry?.path ?? readLastWebPath(), { transitionTypes: ["to-web"] });
     else onClose?.();
-  }, [context, onClose, router]);
+  }, [context, entry?.path, onClose, router]);
+
+  /** `read <slug>`: fetch the post's Markdown and swap the placeholder for the article. */
+  const readPost = useCallback(async (slug: string) => {
+    const blockId = nextId("article");
+    let anchorId = blockId;
+    setBlocks((prev) => {
+      anchorId = prev[prev.length - 1]?.id ?? blockId;
+      return [...prev, { id: blockId, kind: "article", slug, status: "loading", lines: [] }];
+    });
+    let next: TermBlock;
+    try {
+      const res = await fetch(`/blogs/${slug}/md`);
+      if (!res.ok) throw new Error(String(res.status));
+      next = { id: blockId, kind: "article", slug, status: "ready", lines: articleLines(slug, await res.text()) };
+    } catch {
+      next = { id: blockId, kind: "article", slug, status: "error", lines: [] };
+    }
+    scrollTargetRef.current = anchorId;
+    setBlocks((prev) => prev.map((b) => (b.id === blockId ? next : b)));
+  }, []);
 
   const commit = useCallback(
-    async (raw: string) => {
+    async (raw: string, opts?: { anchor?: boolean }) => {
       if (pendingRef.current) return;
       const trimmed = raw.trim();
       setHistPos(null);
@@ -458,8 +572,10 @@ export function AKTerminalWindow({
         return;
       }
 
+      const cmdId = nextId("cmd");
+      if (opts?.anchor) scrollTargetRef.current = cmdId;
       push({
-        id: nextId("cmd"),
+        id: cmdId,
         kind: "cmd",
         prompt: promptFor(cwd),
         text: raw.trimEnd(),
@@ -489,6 +605,10 @@ export function AKTerminalWindow({
           case "navigate":
             window.setTimeout(() => router.push(effect.href), 260);
             break;
+          case "read_post":
+            if (result.blocks.length) push(...result.blocks);
+            void readPost(effect.slug);
+            return;
           case "exit":
             window.setTimeout(leave, 320);
             break;
@@ -496,8 +616,21 @@ export function AKTerminalWindow({
       }
       if (result.blocks.length) push(...result.blocks);
     },
-    [context, cwd, env, history, leave, mode, push, router]
+    [context, cwd, env, history, leave, mode, push, readPost, router]
   );
+
+  // Opened from a web page: run that page's command once, after the login line is in place.
+  const commitRef = useRef(commit);
+  commitRef.current = commit;
+  useEffect(() => {
+    if (!entry?.command || entryRanRef.current) return;
+    const command = entry.command;
+    const t = window.setTimeout(() => {
+      entryRanRef.current = true;
+      void commitRef.current(command, { anchor: true });
+    }, 60);
+    return () => window.clearTimeout(t);
+  }, [entry?.command]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const ctrl = e.ctrlKey && !e.metaKey && !e.altKey;
@@ -626,7 +759,9 @@ export function AKTerminalWindow({
       >
         <div className="space-y-2">
           {blocks.map((b) => (
-            <Block key={b.id} block={b} banner={context === "route" ? "full" : "ak"} />
+            <div key={b.id} data-block-id={b.id}>
+              <Block block={b} banner={context === "route" ? "full" : "ak"} />
+            </div>
           ))}
 
           <div className="relative flex min-w-0 flex-wrap items-baseline">
