@@ -9,8 +9,10 @@ import {
   edgazeState,
   edgazeTimeline,
 } from "../edgaze";
-import { projectStateLabel, projects } from "../projects";
+import { aboutClosingLine, aboutParagraphs } from "../about-content";
+import { getProjectsHomeOrder, projectStateLabel, projects } from "../projects";
 import { contactEmail, siteUrl } from "../site";
+import { stackTechnologyNames } from "../technologies";
 import { buildFs, columns, findFile, HOME, resolvePath, type FsDir } from "./fs";
 import {
   TERMINAL_HOST,
@@ -18,6 +20,7 @@ import {
   TERMINAL_VERSION,
   type CommandResult,
   type TermBlock,
+  type TermEntry,
   type TermEnv,
   type TermLine,
 } from "./types";
@@ -43,6 +46,19 @@ const err = (text: string): CommandResult => ({
   blocks: [{ id: id("err"), kind: "err", text }],
 });
 const nothing = (): CommandResult => ({ blocks: [] });
+/** A page-style result: block-letter heading, then the body lines. */
+const page = (heading: string, lines: TermLine[], extra: Partial<CommandResult> = {}): CommandResult => ({
+  blocks: [
+    { id: id("fig"), kind: "figlet", text: heading },
+    { id: id("out"), kind: "out", lines },
+    ...(extra.blocks ?? []),
+  ],
+  ...(extra.effects ? { effects: extra.effects } : {}),
+});
+const rule = (label?: string): TermLine => ({
+  text: label ? `── ${label} ${"─".repeat(Math.max(4, 44 - label.length))}` : "─".repeat(48),
+  tone: "dim",
+});
 
 export function promptFor(cwd: string): string {
   return `${TERMINAL_USER}@${TERMINAL_HOST} ${cwd} %`;
@@ -203,17 +219,9 @@ const commands: Command[] = [
         "",
       ];
       return out([
-        ...group("About", [
-          "whois",
-          "current",
-          "projects",
-          "project",
-          "blogs",
-          "blog",
-          "stack",
-          "edgaze",
-        ]),
-        ...group("Reach", ["socials", "email", "newsletter", "open"]),
+        ...group("Pages", ["home", "about", "projects", "project", "blogs", "read", "newsletter"]),
+        ...group("About", ["whois", "current", "blog", "stack", "edgaze"]),
+        ...group("Reach", ["socials", "email", "open"]),
         ...group("Files", ["ls", "cd", "pwd", "cat", "tree"]),
         ...group("Shell", [
           "clear",
@@ -250,8 +258,67 @@ const commands: Command[] = [
     complete: (p) => commands.filter((c) => c.name.startsWith(p)).map((c) => c.name),
   },
   {
+    name: "home",
+    aliases: ["index", "start"],
+    usage: "home",
+    description: "The home page, as a terminal",
+    run: (_a, env) => {
+      const featured = getProjectsHomeOrder().slice(0, 4);
+      const latest = env.posts.slice(0, 3);
+      return out([
+        { text: "Arjun Kuttikkat", tone: "bold" },
+        "Founder of Edgaze. Robotics and AI student at University of Birmingham Dubai.",
+        "Building a marketplace and hosted runtime where AI workflows are built, published, and run per use.",
+        "",
+        rule("Now"),
+        `Edgaze is ${edgazeState.label.toLowerCase()} (since ${edgazeState.since}) · ${edgazeState.company}`,
+        `${edgazeMonitoredServices.length} services monitored on ${edgazeLinks.status.replace("https://", "")}. Target: 100k GMV before the end of 2026.`,
+        "",
+        rule("Projects"),
+        ...featured.map((p) => ({
+          text: `  ${p.slug.padEnd(20)}${projectStateLabel[p.state].toLowerCase().padEnd(16)}${p.tagline}`,
+          href: `/projects/${p.slug}`,
+        })),
+        { text: "  projects for the full list · project <slug> for one", tone: "dim" },
+        "",
+        rule("Writing"),
+        ...(latest.length
+          ? latest.map((p) => ({
+              text: `  ${p.date.padEnd(12)}${p.title}  · ${p.readTimeMinutes} min`,
+              href: `/blogs/${p.slug}`,
+            }))
+          : [{ text: "  No published posts yet.", tone: "dim" as const }]),
+        { text: "  blogs for every post · read <slug> to read one here", tone: "dim" },
+        "",
+        rule("Reach"),
+        ...socialLinks.map((s) => ({ text: `  ${s.label.padEnd(10)}${s.href}`, href: s.href })),
+        { text: `  ${"Email".padEnd(10)}${contactEmail}`, href: `mailto:${contactEmail}` },
+        "",
+        { text: "about · newsletter · edgaze · help", tone: "dim" },
+      ]);
+    },
+  },
+  {
+    name: "about",
+    aliases: ["bio", "story"],
+    usage: "about",
+    description: "The about page, in full",
+    run: () =>
+      page("About", [
+        { text: "Arjun Kuttikkat", tone: "bold" },
+        { text: "Founder, Edgaze (Edge Platforms, Inc.) · Robotics and AI, University of Birmingham Dubai", tone: "dim" },
+        "",
+        ...aboutParagraphs.flatMap((p) => [p, ""]),
+        { text: aboutClosingLine, tone: "dim" },
+        "",
+        rule(),
+        { text: "Full page → /about", href: "/about" },
+        { text: "projects · blogs · socials · newsletter", tone: "dim" },
+      ]),
+  },
+  {
     name: "whois",
-    aliases: ["about", "who"],
+    aliases: ["who"],
     usage: "whois [arjun]",
     description: "Who Arjun is, in four lines",
     run: (args) => {
@@ -263,7 +330,7 @@ const commands: Command[] = [
         "Building a marketplace and hosted runtime where AI workflows are built, published, and run per use.",
         "Robotics and AI student at University of Birmingham Dubai.",
         "",
-        { text: "More: cat about.txt · open about", tone: "dim" },
+        { text: "More: about · cat about.txt · open about", tone: "dim" },
       ]);
     },
   },
@@ -279,32 +346,71 @@ const commands: Command[] = [
     aliases: ["pj", "work"],
     usage: "projects",
     description: "Every project record",
-    run: () =>
-      out([
-        { text: "Projects", tone: "bold" },
-        ...[...projects]
-          .sort((a, b) => a.order - b.order)
-          .map((p) => ({
-            text: `  ${p.slug.padEnd(20)}${projectStateLabel[p.state].toLowerCase().padEnd(16)}${p.tagline}`,
-            href: `/projects/${p.slug}`,
-          })),
+    run: () => {
+      const sorted = [...projects].sort((a, b) => a.order - b.order);
+      const w = Math.max(...sorted.map((p) => p.slug.length)) + 3;
+      return page("Projects", [
+        { text: `${sorted.length} projects · newest first`, tone: "dim" },
         "",
-        {
-          text: "project <slug> for details · open <slug> to visit the page",
-          tone: "dim",
-        },
-      ]),
+        ...sorted.flatMap((p) => [
+          {
+            text: `  ${p.slug.padEnd(w)}${projectStateLabel[p.state].toLowerCase()}`,
+            href: `/projects/${p.slug}`,
+          },
+          { text: `    ${p.tagline}`, tone: "dim" as const },
+          "",
+        ]),
+        "",
+        rule(),
+        { text: "project <slug> for the full record · open <slug> for the web page", tone: "dim" },
+      ]);
+    },
   },
   {
     name: "project",
     usage: "project <slug>",
-    description: "Details of one project",
-    run: (args, _e, fs) => {
+    description: "One project, as a page",
+    run: (args) => {
       if (!args[0]) return err("usage: project <slug>   (try: projects)");
-      const f = findFile(fs, `${HOME}/projects`, args[0]);
-      if (!f)
-        return err(`project: '${args[0]}' not found. Run 'projects' to list slugs.`);
-      return out(f.lines());
+      const slug = args[0].replace(/\.md$/, "").toLowerCase();
+      const p = projects.find((x) => x.slug === slug);
+      if (!p) return err(`project: '${args[0]}' not found. Run 'projects' to list slugs.`);
+      const fact = (k: string, v: string) => `  ${k.padEnd(10)}${v}`;
+      const primary = p.links.find((l) => l.kind === "primary");
+      return page(p.name, [
+        { text: p.tagline, tone: "dim" },
+        "",
+        p.summary,
+        "",
+        rule("Facts"),
+        fact("state", `${projectStateLabel[p.state]} · ${p.stateNote}`),
+        fact("year", p.year),
+        fact("role", p.role),
+        ...(p.team ? [fact("team", p.team)] : []),
+        ...(p.context ? [fact("context", p.context)] : []),
+        fact("category", p.category),
+        "",
+        rule("Snapshot"),
+        ...p.snapshot.flatMap((s) => [{ text: `  ${s.label}`, tone: "bold" as const }, `  ${s.value}`, ""]),
+        rule("TL;DR"),
+        ...p.tldr.map((t, i) => `  ${String(i + 1).padStart(2)}. ${t}`),
+        "",
+        rule("Stack"),
+        ...p.stack.flatMap((g) => [
+          { text: `  ${g.title}`, tone: "bold" as const },
+          ...(g.note ? [{ text: `  ${g.note}`, tone: "dim" as const }] : []),
+          `  ${stackTechnologyNames([g]).join(" · ")}`,
+          "",
+        ]),
+        rule("Links"),
+        ...p.links.map((l) => ({ text: `  ${l.label.padEnd(20)}${l.href}`, href: l.href })),
+        { text: `  ${"Project page".padEnd(20)}/projects/${p.slug}`, href: `/projects/${p.slug}` },
+        "",
+        {
+          text: `open ${p.slug} for the web page${primary ? ` · open ${primary.href} for the product` : ""} · projects for the rest`,
+          tone: "dim",
+        },
+      ]);
     },
     complete: (p) => projects.map((x) => x.slug).filter((s) => s.startsWith(p)),
   },
@@ -315,15 +421,19 @@ const commands: Command[] = [
     description: "Published posts, newest first",
     run: (_a, env) => {
       if (env.posts.length === 0)
-        return out([{ text: "No published posts yet.", tone: "dim" }]);
-      return out([
-        { text: `Posts (${env.posts.length})`, tone: "bold" },
-        ...env.posts.map((p) => ({
-          text: `  ${p.date.padEnd(12)}${p.title}  ${`· ${p.readTimeMinutes} min`}`,
-          href: `/blogs/${p.slug}`,
-        })),
+        return page("Blogs", [{ text: "No published posts yet.", tone: "dim" }]);
+      return page("Blogs", [
+        { text: `${env.posts.length} posts · newest first`, tone: "dim" },
         "",
-        { text: "blog <slug> for the summary · open blogs for the index", tone: "dim" },
+        ...env.posts.flatMap((p) => [
+          { text: `  ${p.title}`, href: `/blogs/${p.slug}` },
+          { text: `    ${p.date} · ${p.readTimeMinutes} min read`, tone: "dim" as const },
+          { text: `    ${p.description}`, tone: "dim" as const },
+          { text: `    read ${p.slug}`, tone: "accent" as const },
+          "",
+        ]),
+        rule(),
+        { text: "read <slug> to read a post here · blog <slug> for the summary · open blogs for the index", tone: "dim" },
       ]);
     },
   },
@@ -344,6 +454,20 @@ const commands: Command[] = [
     complete: (p, env) => env.posts.map((x) => x.slug).filter((s) => s.startsWith(p)),
   },
   {
+    name: "read",
+    aliases: ["view", "show"],
+    usage: "read <slug>",
+    description: "Read a whole post in the terminal",
+    run: (args, env) => {
+      if (!args[0]) return err("usage: read <slug>   (try: blogs)");
+      const slug = args[0].replace(/^(~\/)?blogs\//, "").replace(/\.md$/, "").toLowerCase();
+      const post = env.posts.find((p) => p.slug === slug);
+      if (!post) return err(`read: '${args[0]}' not found. Run 'blogs' to list slugs.`);
+      return { blocks: [], effects: [{ type: "read_post", slug: post.slug }] };
+    },
+    complete: (p, env) => env.posts.map((x) => x.slug).filter((s) => s.startsWith(p)),
+  },
+  {
     name: "stack",
     aliases: ["tech", "skills"],
     usage: "stack",
@@ -357,8 +481,7 @@ const commands: Command[] = [
     run: (args) => {
       const sub = args[0];
       if (!sub) {
-        return out([
-          { text: "Edgaze", tone: "bold" },
+        return page("Edgaze", [
           "A marketplace and hosted runtime where AI workflows are built, published with a price per run,",
           "and executed by people, backends, and agents.",
           "",
@@ -461,12 +584,17 @@ const commands: Command[] = [
     aliases: ["subscribe"],
     usage: "newsletter",
     description: "Subscribe from the terminal",
-    run: () => ({
-      blocks: [
-        { id: id("out"), kind: "out", lines: ["Email address (Ctrl+C to cancel):"] },
-      ],
-      effects: [{ type: "prompt_email" }],
-    }),
+    run: () =>
+      page(
+        "Newsletter",
+        [
+          "Occasional notes from building Edgaze: what shipped, what broke, what changed. No schedule.",
+          { text: "One email address, nothing else. Unsubscribe from any issue.", tone: "dim" },
+          "",
+          "Email address (Ctrl+C to cancel):",
+        ],
+        { effects: [{ type: "prompt_email" }] }
+      ),
   },
   {
     name: "open",
@@ -893,7 +1021,7 @@ export function complete(
 }
 
 /** Boot output without the clock-dependent login line, so server and client render the same markup. */
-export function bootBlocks(context: TermEnv["context"]): TermBlock[] {
+export function bootBlocks(context: TermEnv["context"], entry?: TermEntry): TermBlock[] {
   return [
     { id: "boot-banner", kind: "banner" },
     {
@@ -911,7 +1039,9 @@ export function bootBlocks(context: TermEnv["context"]): TermBlock[] {
           {
             id: "boot-exit",
             kind: "system" as const,
-            text: "Type 'exit' to return to the site.",
+            text: entry
+              ? `Opened from ${entry.path} · working directory ${entry.cwd} · 'exit' returns there.`
+              : "Type 'exit' to return to the site.",
           },
         ]
       : []),
@@ -921,12 +1051,12 @@ export function bootBlocks(context: TermEnv["context"]): TermBlock[] {
 
 export const SUGGESTIONS = [
   "help",
-  "whois arjun",
-  "current",
+  "home",
+  "about",
   "projects",
+  "project edgaze",
   "blogs",
   "neofetch",
-  "open edgaze",
   "newsletter",
   "clear",
 ] as const;
