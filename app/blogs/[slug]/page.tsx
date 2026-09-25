@@ -4,6 +4,7 @@ import { BlogPostNav } from "../../../components/blog/blog-post-nav";
 import { BlogProgressBar } from "../../../components/blog/blog-progress-bar";
 import { BlogPromoArticleFooter } from "../../../components/blog/blog-promo-article-footer";
 import { BlogShareBar } from "../../../components/blog/blog-share-bar";
+import { BlogTocDesktopPanel } from "../../../components/blog/blog-toc-panels";
 import { Footer } from "../../../components/footer";
 import { Navbar } from "../../../components/navbar";
 import { RelatedPosts } from "../../../components/blog/related-posts";
@@ -277,7 +278,8 @@ export default async function BlogPostPage({ params }: PageProps) {
             </div>
           ) : null}
 
-          <div className="mx-auto mt-12 max-w-[46rem]">
+          <div className="relative mx-auto mt-12 max-w-[46rem]">
+            <BlogTocDesktopPanel items={post.toc} />
             <BlogArticleReadingLayout toc={post.toc} article={post.content} />
 
             <BlogShareBar url={url} title={post.title} />
