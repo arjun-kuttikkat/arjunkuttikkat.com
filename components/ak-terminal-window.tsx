@@ -343,7 +343,7 @@ function Menu({ block, handlers }: { block: MenuBlock; handlers: MenuHandlers })
       )}
       <p className={`${TEXT} mt-1 text-[#6f6f6f]`}>
         {block.done === "cancelled" ? (
-          "cancelled"
+          "cancelled · cd projects · cd blogs · about · newsletter"
         ) : block.done === "chosen" ? (
           `${visible.length === block.items.length ? block.items.length : visible.length}/${block.items.length}`
         ) : (
