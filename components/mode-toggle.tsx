@@ -37,7 +37,8 @@ function PromptIcon() {
   );
 }
 
-function readLastWebPath() {
+/** The last web page the visitor was on, so leaving the terminal lands back there. */
+export function readLastWebPath() {
   try {
     const stored = sessionStorage.getItem(LAST_WEB_KEY);
     if (stored && stored.startsWith("/") && stored !== TERMINAL_HREF) return stored;
@@ -45,6 +46,13 @@ function readLastWebPath() {
     // sessionStorage can be blocked.
   }
   return WEB_HREF;
+}
+
+/** `/terminal?from=<page>`: the terminal opens in that page's directory and prints its twin. */
+export function terminalHrefFor(pathname: string) {
+  return pathname === TERMINAL_HREF
+    ? TERMINAL_HREF
+    : `${TERMINAL_HREF}?from=${encodeURIComponent(pathname)}`;
 }
 
 export function ModeToggle({ className }: { className?: string }) {
@@ -109,7 +117,7 @@ export function ModeToggle({ className }: { className?: string }) {
         </span>
       ) : (
         <Link
-          href={TERMINAL_HREF}
+          href={terminalHrefFor(pathname)}
           transitionTypes={["to-terminal"]}
           prefetch
           aria-label="Terminal"
