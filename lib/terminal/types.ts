@@ -73,6 +73,8 @@ export type TermEffect =
 export type TermEnv = {
   context: TerminalContext;
   cwd: string;
+  /** Directory before the last `cd`, for `cd -`. */
+  prevCwd?: string;
   posts: TermPost[];
   history: string[];
   startedAt: number;
