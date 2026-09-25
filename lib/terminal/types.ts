@@ -22,7 +22,16 @@ export type TermLine =
       tone?: LineTone;
       /** Internal route or external URL. Rendered as a link when present. */
       href?: string;
+      /** Leading key printed in the label colour, e.g. `state     ` before a value. */
+      label?: string;
     };
+
+/** One row of an interactive `menu` block. Choosing it runs `command`. */
+export type MenuItem = {
+  label: string;
+  hint?: string;
+  command: string;
+};
 
 export type TermBlock =
   | { id: string; kind: "banner" }
@@ -36,7 +45,20 @@ export type TermBlock =
   /** Horizontal rule, optionally labelled: `── Stack ─────`. */
   | { id: string; kind: "rule"; label?: string }
   /** A full blog post fetched on the client and rendered from Markdown. */
-  | { id: string; kind: "article"; slug: string; status: "loading" | "ready" | "error"; lines: TermLine[] };
+  | { id: string; kind: "article"; slug: string; status: "loading" | "ready" | "error"; lines: TermLine[] }
+  /**
+   * A cursor-driven list. While it is the active block the window moves
+   * `selected` with the arrow keys and narrows `items` by `filter`; Enter (or a
+   * tap) runs the item's command and freezes the block with `done` set.
+   */
+  | {
+      id: string;
+      kind: "menu";
+      items: MenuItem[];
+      selected: number;
+      filter: string;
+      done?: "chosen" | "cancelled";
+    };
 
 export type TermEffect =
   | { type: "clear" }
