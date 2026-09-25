@@ -14,12 +14,13 @@ import { projectStateLabel, projects } from "../projects";
 import { contactEmail, siteUrl } from "../site";
 import { stackTechnologyNames } from "../technologies";
 import { figlet } from "./figlet";
-import { buildFs, columns, findDir, findFile, HOME, resolvePath, type FsDir } from "./fs";
+import { buildFs, columns, findDir, findFile, HOME, resolvePath, type FsDir, type FsFile } from "./fs";
 import {
   TERMINAL_HOST,
   TERMINAL_USER,
   TERMINAL_VERSION,
   type CommandResult,
+  type MenuItem,
   type TermBlock,
   type TermEntry,
   type TermEnv,
@@ -71,15 +72,105 @@ function enterDir(input: string | undefined, env: TermEnv, fs: Record<string, Fs
   const raw = input === "-" ? (env.prevCwd ?? HOME) : (input ?? HOME);
   const target = findDir(fs, env.cwd, raw);
   if (!target) {
-    return findFile(fs, env.cwd, raw)
-      ? err(`cd: not a directory: ${raw}`)
-      : err(`cd: no such file or directory: ${raw}\n    directories: ${fs[HOME].dirs.join(", ")} (cd works from anywhere)`);
+    // `cd projects/edgaze`: a project or post is a file, but the visitor means "go there". Go there.
+    const file = findFile(fs, env.cwd, raw);
+    if (file) return openFile(file, env, fs);
+    return withSuggestions(`cd: no such file or directory: ${raw}`, raw, env, fs, { dirs: true, files: true });
   }
   const effects: CommandResult["effects"] = [{ type: "cwd", cwd: target }];
   const twin = DIR_COMMANDS[target];
   if (!twin) return { blocks: [], effects };
   const res = find(twin)!.run([], { ...env, cwd: target }, fs);
   return { blocks: res.blocks, effects: [...effects, ...(res.effects ?? [])] };
+}
+
+/** Open a file the way its page would: project record, full post, or plain contents. Also moves into its directory. */
+function openFile(file: FsFile, env: TermEnv, fs: Record<string, FsDir>): CommandResult {
+  const project = file.href?.match(/^\/projects\/([^/]+)$/)?.[1];
+  const post = file.href?.match(/^\/blogs\/([^/]+)$/)?.[1];
+  const dir = project ? `${HOME}/projects` : post ? `${HOME}/blogs` : env.cwd;
+  const res = project
+    ? find("project")!.run([project], env, fs)
+    : post
+      ? find("read")!.run([post], env, fs)
+      : out(file.lines());
+  const effects = dir !== env.cwd ? [{ type: "cwd" as const, cwd: dir }, ...(res.effects ?? [])] : res.effects;
+  return { blocks: res.blocks, ...(effects?.length ? { effects } : {}) };
+}
+
+type SuggestScope = { commands?: boolean; dirs?: boolean; files?: boolean; projects?: boolean; posts?: boolean };
+
+/** Damerau–Levenshtein distance (swapped letters count once), for "did you mean". */
+function distance(a: string, b: string): number {
+  const m = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array<number>(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) m[0][j] = j;
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++) {
+      m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1])
+        m[i][j] = Math.min(m[i][j], m[i - 2][j - 2] + 1);
+    }
+  return m[a.length][b.length];
+}
+
+/**
+ * An error, followed by a picker of the closest things the visitor might have
+ * meant. Nothing typed into this terminal should end in a red line and silence.
+ */
+function withSuggestions(
+  message: string,
+  typed: string,
+  env: TermEnv,
+  fs: Record<string, FsDir>,
+  scope: SuggestScope,
+  rest = ""
+): CommandResult {
+  const q = typed.toLowerCase().replace(/^~\//, "").replace(/\/$/, "");
+  const last = (q.split("/").pop() ?? q).replace(/\.(md|txt)$/, "");
+  const tolerance = Math.max(1, Math.floor(last.length / 3));
+  const near = (s: string) => {
+    const t = s.toLowerCase().replace(/\.(md|txt)$/, "");
+    if (!last) return undefined;
+    if (t.includes(last) || last.includes(t)) return 0;
+    const d = distance(last, t);
+    return d <= tolerance ? d : undefined;
+  };
+  const found: Array<{ score: number; item: MenuItem }> = [];
+  const add = (score: number | undefined, item: MenuItem) => {
+    if (score !== undefined && !found.some((f) => f.item.command === item.command)) found.push({ score, item });
+  };
+  if (scope.commands)
+    for (const c of commands.filter((c) => !c.hidden))
+      add(near(c.name), { label: `${c.name}${rest ? ` ${rest}` : ""}`, hint: c.description, command: `${c.name}${rest ? ` ${rest}` : ""}` });
+  if (scope.dirs) for (const d of fs[HOME].dirs) add(near(d), { label: `${d}/`, hint: "directory", command: `cd ${d}` });
+  if (scope.files || scope.projects)
+    for (const p of projects)
+      add(Math.min(near(p.slug) ?? 99, near(p.name) ?? 99) < 99 ? Math.min(near(p.slug) ?? 99, near(p.name) ?? 99) : undefined, {
+        label: p.name,
+        hint: "project",
+        command: `project ${p.slug}`,
+      });
+  if (scope.files || scope.posts)
+    for (const p of env.posts)
+      add(Math.min(near(p.slug) ?? 99, near(p.title) ?? 99) < 99 ? Math.min(near(p.slug) ?? 99, near(p.title) ?? 99) : undefined, {
+        label: p.title,
+        hint: "post",
+        command: `read ${p.slug}`,
+      });
+  if (scope.files)
+    for (const f of fs[HOME].files.filter((f) => !f.hidden)) add(near(f.name), { label: f.name, hint: "file", command: `cat ${f.name}` });
+
+  const items = found.sort((a, b) => a.score - b.score).slice(0, 6).map((f) => f.item);
+  const blocks: TermBlock[] = [{ id: id("err"), kind: "err", text: message }];
+  if (items.length) {
+    blocks.push(
+      { id: id("out"), kind: "out", lines: [{ text: "did you mean:", tone: "dim" }] },
+      { id: id("menu"), kind: "menu", items, selected: 0, filter: "" }
+    );
+  } else {
+    blocks.push({ id: id("out"), kind: "out", lines: [{ text: "try: cd projects · cd blogs · about · help", tone: "dim" }] });
+  }
+  return { blocks };
 }
 
 /**
@@ -399,13 +490,14 @@ const commands: Command[] = [
     name: "project",
     usage: "project <slug>",
     description: "One project, as a page",
-    run: (args) => {
+    run: (args, env, fs) => {
       if (!args[0]) return err("usage: project <slug>   (try: projects)");
       const slug = args[0].replace(/\.md$/, "").toLowerCase();
       const p = projects.find((x) => x.slug === slug);
-      if (!p) return err(`project: '${args[0]}' not found. Run 'projects' to list slugs.`);
+      if (!p) return withSuggestions(`project: '${args[0]}' not found`, slug, env, fs, { projects: true });
       const fact = (k: string, v: string): TermLine => ({ label: `  ${k.padEnd(10)}`, text: v });
       const primary = p.links.find((l) => l.kind === "primary");
+      const linkWidth = Math.max(12, ...p.links.map((l) => l.label.length)) + 2;
       return page(p.name, [
         { text: p.tagline, tone: "dim" },
         "",
@@ -432,8 +524,8 @@ const commands: Command[] = [
           "",
         ]),
         rule("Links"),
-        ...p.links.map((l) => ({ label: `  ${l.label.padEnd(20)}`, text: l.href, href: l.href })),
-        { label: `  ${"Project page".padEnd(20)}`, text: `/projects/${p.slug}`, href: `/projects/${p.slug}` },
+        ...p.links.map((l) => ({ label: `  ${l.label.padEnd(linkWidth)}`, text: l.href, href: l.href })),
+        { label: `  ${"Project page".padEnd(linkWidth)}`, text: `/projects/${p.slug}`, href: `/projects/${p.slug}` },
         "",
         {
           text: `open ${p.slug} for the web page${primary ? ` · open ${primary.href} for the product` : ""} · projects for the rest`,
@@ -473,13 +565,10 @@ const commands: Command[] = [
     aliases: ["post"],
     usage: "blog <slug>",
     description: "Summary of one post",
-    run: (args, _e, fs) => {
+    run: (args, env, fs) => {
       if (!args[0]) return err("usage: blog <slug>   (try: blogs)");
       const f = findFile(fs, `${HOME}/blogs`, args[0]);
-      if (!f)
-        return err(
-          `blog: '${args[0]}' not found. Run 'blogs' or 'ls blogs' to list slugs.`
-        );
+      if (!f) return withSuggestions(`blog: '${args[0]}' not found`, args[0], env, fs, { posts: true });
       return out(f.lines());
     },
     complete: (p, env) => env.posts.map((x) => x.slug).filter((s) => s.startsWith(p)),
@@ -489,11 +578,11 @@ const commands: Command[] = [
     aliases: ["view", "show"],
     usage: "read <slug>",
     description: "Read a whole post in the terminal",
-    run: (args, env) => {
+    run: (args, env, fs) => {
       if (!args[0]) return err("usage: read <slug>   (try: blogs)");
       const slug = args[0].replace(/^(~\/)?blogs\//, "").replace(/\.md$/, "").toLowerCase();
       const post = env.posts.find((p) => p.slug === slug);
-      if (!post) return err(`read: '${args[0]}' not found. Run 'blogs' to list slugs.`);
+      if (!post) return withSuggestions(`read: '${args[0]}' not found`, slug, env, fs, { posts: true });
       return { blocks: [], effects: [{ type: "read_post", slug: post.slug }] };
     },
     complete: (p, env) => env.posts.map((x) => x.slug).filter((s) => s.startsWith(p)),
@@ -649,9 +738,15 @@ const commands: Command[] = [
       if (file?.href) return openResult(file.href, file.name);
       if (file) return err(`open: ${file.name} has no page. Try 'cat ${file.name}'.`);
       if (/^https?:\/\//.test(target)) return openResult(target, target);
-      return err(
-        `open: nothing matches '${target}'. Run 'open' for the list of targets.`
-      );
+      const pages = Object.entries(OPEN_TARGETS)
+        .filter(([k]) => k.includes(key) || key.includes(k) || distance(k, key) <= Math.max(1, Math.floor(key.length / 3)))
+        .map(([k, v]) => ({ label: v.label, hint: v.href, command: `open ${k}` }));
+      const res = withSuggestions(`open: nothing matches '${target}'`, target, env, fs, { files: true });
+      const menu = res.blocks.find((b): b is Extract<TermBlock, { kind: "menu" }> => b.kind === "menu");
+      if (menu) menu.items = [...pages, ...menu.items].slice(0, 6);
+      else if (pages.length)
+        res.blocks.splice(1, 1, { id: id("out"), kind: "out", lines: [{ text: "did you mean:", tone: "dim" }] }, { id: id("menu"), kind: "menu", items: pages.slice(0, 6), selected: 0, filter: "" });
+      return res;
     },
     complete: (p, env, fs) => {
       const keys = [
@@ -686,7 +781,7 @@ const commands: Command[] = [
         ]);
       const file = findFile(fs, env.cwd, paths[0] ?? "");
       if (file) return out([file.name]);
-      return err(`ls: ${paths[0]}: No such file or directory`);
+      return withSuggestions(`ls: ${paths[0]}: No such file or directory`, paths[0] ?? "", env, fs, { dirs: true, files: true });
     },
     complete: completePath,
   },
@@ -719,7 +814,7 @@ const commands: Command[] = [
       for (const a of args) {
         if (fs[resolvePath(env.cwd, a)]) return err(`cat: ${a}: Is a directory`);
         const f = findFile(fs, env.cwd, a);
-        if (!f) return err(`cat: ${a}: No such file or directory`);
+        if (!f) return withSuggestions(`cat: ${a}: No such file or directory`, a, env, fs, { files: true });
         results.push(...f.lines());
       }
       return out(results);
@@ -1170,27 +1265,14 @@ export function execute(raw: string, env: TermEnv): CommandResult {
   if (cmd) return cmd.run(args, env, fs);
   const jump = args.length === 0 ? autoJump(name, env, fs) : undefined;
   if (jump) return jump;
-  const close = suggest(name);
-  return err(
-    `zsh: command not found: ${name}${close ? `\n    did you mean '${close}'?` : "\n    try: cd projects · cd blogs · about · help"}`
+  return withSuggestions(
+    `zsh: command not found: ${name}`,
+    name,
+    env,
+    fs,
+    { commands: true, dirs: true, files: true },
+    args.join(" ")
   );
-}
-
-/** Nearest visible command by edit distance, for "did you mean". */
-function suggest(name: string): string | undefined {
-  const dist = (a: string, b: string) => {
-    const m = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)] as number[]);
-    for (let j = 1; j <= b.length; j++) m[0][j] = j;
-    for (let i = 1; i <= a.length; i++)
-      for (let j = 1; j <= b.length; j++)
-        m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
-    return m[a.length][b.length];
-  };
-  const best = commands
-    .filter((c) => !c.hidden)
-    .map((c) => ({ name: c.name, d: dist(name.toLowerCase(), c.name) }))
-    .sort((a, b) => a.d - b.d)[0];
-  return best && best.d <= Math.max(1, Math.floor(name.length / 3)) ? best.name : undefined;
 }
 
 /** Tab completion. Returns the candidates for the last token of `raw`. */
